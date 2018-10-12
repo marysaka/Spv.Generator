@@ -14,10 +14,10 @@ namespace Spv.Generator
         public List<uint> Words { get; private set; }
 
         // optioanl
-        public  bool HasTypeId { get; private set; }
-        private bool HasResultTypeId;
-        private uint TypeId;
-        private uint ResultTypeId;
+        public bool HasTypeId { get; private set; }
+        public bool HasResultTypeId { get; private set; }
+        public uint TypeId { get; private set; }
+        public uint ResultTypeId { get; private set; }
 
 
         public Instruction(Op OpCode, List<uint> Words = null)

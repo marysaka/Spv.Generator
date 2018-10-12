@@ -19,29 +19,6 @@ namespace Spv.Generator
             return CreateInstruction(Op.OpNop);
         }
 
-        public static Instruction Capability(Capability Capability)
-        {
-            return CreateInstruction(Op.OpCapability, (uint)Capability);
-        }
-
-        public static Instruction MemoryModel(AddressingModel AddressingModel, MemoryModel MemoryModel)
-        {
-            return CreateInstruction(Op.OpMemoryModel, (uint)AddressingModel, (uint)MemoryModel);
-        }
-
-        public static Instruction EntryPoint(ExecutionModel ExecutionModel, Instruction Function, string Name, params Instruction[] Interfaces)
-        {
-            // TODO: check if Function is an OpFunction
-            Instruction Result = CreateInstruction(Op.OpEntryPoint);
-
-            Result.PushOperand((uint)ExecutionModel);
-            Result.PushOperandResultTypeId(Function);
-            Result.PushOperand(Name);
-            Result.PushOperandTypeId(Interfaces);
-
-            return Result;
-        }
-
         public static Instruction Function(Instruction ReturnType, FunctionControlMask FunctionControl, Instruction FunctionType)
         {
             Instruction Result = CreateInstruction(Op.OpFunction);
@@ -66,26 +43,6 @@ namespace Spv.Generator
         public static Instruction Return()
         {
             return CreateInstruction(Op.OpReturn);
-        }
-
-        public static Instruction TypeVoid()
-        {
-            return CreateInstruction(Op.OpTypeVoid);
-        }
-
-        public static Instruction TypeBool()
-        {
-            return CreateInstruction(Op.OpTypeBool);
-        }
-
-        public static Instruction TypeInt(int Width, bool Signed)
-        {
-            return CreateInstruction(Op.OpTypeInt, (uint)Width, Signed ? 1u: 0u);
-        }
-
-        public static Instruction TypeFloat(int Width)
-        {
-            return CreateInstruction(Op.OpTypeFloat, (uint)Width);
         }
 
         public static Instruction TypeFunction(Instruction ReturnType, params Instruction[] Params)

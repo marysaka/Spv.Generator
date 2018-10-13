@@ -12,12 +12,9 @@ namespace Spv.Generator.Test
             Module ModuleTest = new Module();
             ModuleTest.AddCapability(Capability.Shader);
             ModuleTest.SetMemoryModel(AddressingModel.Logical, MemoryModel.GLSL450);
-            ModuleTest.Extension("SPV_AMD_shader_explicit_vertex_parameter");
+            ModuleTest.Extension("TestExtension");
             ModuleTest.ExtInstImport("GLSL.std.450");
             
-
-            //ModuleTest.TypeMatrix(ModuleTest.TypeVector(ModuleTest.TypeFloat(32), 4), 4);
-
             Instruction TypeVoid       = ModuleTest.TypeVoid();
             Instruction TypeFloat      = ModuleTest.TypeFloat(32);
             Instruction TypeInt        = ModuleTest.TypeInt(32, true);
@@ -25,18 +22,18 @@ namespace Spv.Generator.Test
 
 
             Instruction MainFunctionType = ModuleTest.TypeFunction(TypeVoid);
-            Instruction MainFunction     = ModuleTest.Function(TypeVoid, FunctionControlMask.MaskNone, MainFunctionType);
+            Instruction MainFunction     = ModuleTest.CreateFunction(TypeVoid, FunctionControlMask.MaskNone, MainFunctionType);
 
-            //ModuleTest.FunctionParameter(TypeInt.TypeId);
-            //ModuleTest.FunctionParameter(TypeFloat.TypeId);
+            Instruction SecondaryFunctionType = ModuleTest.TypeFunction(TypeVoid);
+            Instruction SecondaryFunction     = ModuleTest.CreateFunction(TypeVoid, FunctionControlMask.MaskNone, SecondaryFunctionType);
 
+            ModuleTest.EmitCode(MainFunction);
             ModuleTest.Label();
+            ModuleTest.FunctionCall(TypeVoid.TypeId, SecondaryFunction.ResultTypeId);
             ModuleTest.EmitCode(Instructions.Return());
             ModuleTest.FunctionEnd();
 
-            Instruction SecondaryFunctionType = ModuleTest.TypeFunction(TypeVoid, TypeInt);
-            Instruction SecondaryFunction     = ModuleTest.Function(TypeVoid, FunctionControlMask.MaskNone, SecondaryFunctionType);
-            ModuleTest.FunctionParameter(TypeInt.TypeId);
+            ModuleTest.EmitCode(SecondaryFunction);
             ModuleTest.Label();
             ModuleTest.EmitCode(Instructions.Return());
             ModuleTest.FunctionEnd();

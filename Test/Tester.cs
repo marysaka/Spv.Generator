@@ -15,14 +15,28 @@ namespace Spv.Generator.Test
             ModuleTest.Extension("SPV_AMD_shader_explicit_vertex_parameter");
             ModuleTest.ExtInstImport("GLSL.std.450");
             
-            ModuleTest.TypeMatrix(ModuleTest.TypeVector(ModuleTest.TypeFloat(32), 4), 4);
 
-            Instruction MainFunctionType = ModuleTest.TypeFunction(ModuleTest.TypeVoid());
-            Instruction MainFunction     = ModuleTest.FunctionStart(ModuleTest.TypeVoid(), FunctionControlMask.MaskNone, MainFunctionType);
+            //ModuleTest.TypeMatrix(ModuleTest.TypeVector(ModuleTest.TypeFloat(32), 4), 4);
 
-            ModuleTest.Undef(ModuleTest.TypeVoid().TypeId);
-            ModuleTest.ConstantTrue(ModuleTest.TypeBool().TypeId);
+            Instruction TypeVoid       = ModuleTest.TypeVoid();
+            Instruction TypeFloat      = ModuleTest.TypeFloat(32);
+            Instruction TypeInt        = ModuleTest.TypeInt(32, true);
+            Instruction TypePointerInt = ModuleTest.TypePointer(StorageClass.Input, TypeInt.TypeId);
 
+
+            Instruction MainFunctionType = ModuleTest.TypeFunction(TypeVoid);
+            Instruction MainFunction     = ModuleTest.Function(TypeVoid, FunctionControlMask.MaskNone, MainFunctionType);
+
+            //ModuleTest.FunctionParameter(TypeInt.TypeId);
+            //ModuleTest.FunctionParameter(TypeFloat.TypeId);
+
+            ModuleTest.Label();
+            ModuleTest.EmitCode(Instructions.Return());
+            ModuleTest.FunctionEnd();
+
+            Instruction SecondaryFunctionType = ModuleTest.TypeFunction(TypeVoid, TypeInt);
+            Instruction SecondaryFunction     = ModuleTest.Function(TypeVoid, FunctionControlMask.MaskNone, SecondaryFunctionType);
+            ModuleTest.FunctionParameter(TypeInt.TypeId);
             ModuleTest.Label();
             ModuleTest.EmitCode(Instructions.Return());
             ModuleTest.FunctionEnd();

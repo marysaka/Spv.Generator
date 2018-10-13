@@ -30,7 +30,7 @@ namespace Spv.Generator
                 // TODO: check if Function is an OpFunction
                 EntryPointInstruction.PushOperandResultTypeId(EntryPoint);
                 EntryPointInstruction.PushOperand(Name);
-                EntryPointInstruction.PushOperandTypeId(Interfaces);
+                EntryPointInstruction.PushOperandResultTypeId(Interfaces);
                 EntryPoints.Add(RegistryName, EntryPointInstruction);
             }
 

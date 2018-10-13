@@ -57,6 +57,13 @@ namespace Spv.Generator
             }
         }
 
+        public void PushOperandResultTypeId(Instruction[] Operands)
+        {
+            foreach (Instruction Operand in Operands)
+            {
+                PushOperandResultTypeId(Operand);
+            }
+        }
 
         public void PushOperand(uint[] Operands)
         {
@@ -153,7 +160,7 @@ namespace Spv.Generator
 
         public bool IsGlobalVariable()
         {
-            return OpCode == Op.OpVariable && Words.Count >= 2 && (StorageClass)Words[1] != StorageClass.Function;
+            return OpCode == Op.OpVariable && Words.Count >= 1 && (StorageClass)Words[0] != StorageClass.Function;
         }
 
         public bool IsConstant()

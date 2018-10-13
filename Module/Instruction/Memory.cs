@@ -4,11 +4,11 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        public Instruction Variable(uint ResultType, uint Type, StorageClass StorageClass)
+        public Instruction Variable(uint Type, StorageClass StorageClass)
         {
             Instruction Variable = CreateInstruction(Op.OpVariable, (uint)StorageClass);
             Variable.SetTypeId(Type);
-            Variable.SetResultTypeId(ResultType);
+            Variable.SetResultTypeId(AllocateId());
 
             if (Variable.IsGlobalVariable())
             {

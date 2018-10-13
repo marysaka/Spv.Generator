@@ -30,7 +30,6 @@ namespace Spv.Generator
         private Dictionary<string, Instruction> EntryPoints;
         private List<Instruction> ExecutionModes;
 
-
         public Module(uint Version = DefaultVersion)
         {
             this.Version           = Version;

@@ -23,7 +23,6 @@ namespace Spv.Generator.Test
             ModuleTest.Undef(ModuleTest.TypeVoid().TypeId);
             ModuleTest.ConstantTrue(ModuleTest.TypeBool().TypeId);
 
-
             ModuleTest.Label();
             ModuleTest.EmitCode(Instructions.Return());
             ModuleTest.FunctionEnd();

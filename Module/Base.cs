@@ -12,6 +12,9 @@ namespace Spv.Generator
         // TODO register the generator: https://www.khronos.org/registry/spir-v/api/spir-v.xml
         private const uint GeneratorID = 0;
 
+        // TODO: update to latest specs when 1.0 will be fully supported.
+        private const uint DefaultVersion = 0x00010000; // Specification.Version
+
         private uint Bound = 1;
         private uint Version;
 
@@ -28,7 +31,7 @@ namespace Spv.Generator
         private List<Instruction> ExecutionModes;
 
 
-        public Module(uint Version = Specification.Version)
+        public Module(uint Version = DefaultVersion)
         {
             this.Version           = Version;
             Capabilities           = new List<Instruction>();
@@ -40,11 +43,6 @@ namespace Spv.Generator
             Annotations            = new List<Instruction>();
             EntryPoints            = new Dictionary<string, Instruction>();
             ExecutionModes         = new List<Instruction>();
-        }
-
-        public Instruction TypeFunction(Instruction ReturnType, params Instruction[] Params)
-        {
-            return AddTypeDeclaration(Instructions.TypeFunction(ReturnType, Params));
         }
 
         public Instruction FunctionStart(Instruction ReturnType, FunctionControlMask FunctionControl, Instruction FunctionType)
@@ -61,7 +59,6 @@ namespace Spv.Generator
         {
             return EmitCode(Instructions.FunctionEnd());
         }
-
 
         private Instruction CreateInstruction(Op Opcode, params uint[] Words)
         {

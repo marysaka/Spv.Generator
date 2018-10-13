@@ -21,6 +21,7 @@ namespace Spv.Generator.Test
             Instruction MainFunction     = ModuleTest.FunctionStart(ModuleTest.TypeVoid(), FunctionControlMask.MaskNone, MainFunctionType);
 
             ModuleTest.Undef(ModuleTest.TypeVoid().TypeId);
+            ModuleTest.ConstantTrue(ModuleTest.TypeBool().TypeId);
 
 
             ModuleTest.Label();

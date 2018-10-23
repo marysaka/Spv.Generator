@@ -54,13 +54,18 @@ namespace Spv.Generator
             return new Instruction(Opcode, new List<uint>(Words));
         }
 
-        private Instruction EmitOperationWithResulType(Op Opcode, uint ResultType, params uint[] Values)
+        private Instruction CreateOperationWithResulType(Op Opcode, uint ResultType, params uint[] Values)
         {
             Instruction Result = CreateInstruction(Opcode, Values);
             Result.SetTypeId(ResultType);
             Result.SetResultTypeId(AllocateId());
 
-            return EmitCode(Result);
+            return Result;
+        }
+
+        private Instruction EmitOperationWithResulType(Op Opcode, uint ResultType, params uint[] Values)
+        {
+            return EmitCode(CreateOperationWithResulType(Opcode, ResultType, Values));
         }
 
         public uint AllocateId()

@@ -30,12 +30,12 @@ namespace Spv.Generator.Test
             ModuleTest.EmitCode(MainFunction);
             ModuleTest.Label();
             ModuleTest.FunctionCall(TypeVoid.TypeId, SecondaryFunction.ResultTypeId);
-            ModuleTest.EmitCode(Instructions.Return());
+            ModuleTest.Return();
             ModuleTest.FunctionEnd();
 
             ModuleTest.EmitCode(SecondaryFunction);
             ModuleTest.Label();
-            ModuleTest.EmitCode(Instructions.Return());
+            ModuleTest.Return();
             ModuleTest.FunctionEnd();
 
             ModuleTest.AddEntryPoint(ExecutionModel.Fragment, MainFunction, "main");

@@ -44,11 +44,6 @@ namespace Spv.Generator
             ExecutionModes         = new List<Instruction>();
         }
 
-        public Instruction Label()
-        {
-            return EmitCode(Instructions.Label().SetResultTypeId(Bound++));
-        }
-
         private Instruction CreateInstruction(Op Opcode, params uint[] Words)
         {
             return new Instruction(Opcode, new List<uint>(Words));

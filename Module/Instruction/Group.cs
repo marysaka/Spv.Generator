@@ -4,7 +4,6 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        // TODO: Group instructions
         public Instruction GroupAsyncCopy(uint ResultType, uint Execution, uint Destination, uint Source, uint NumElements, uint Stride, uint Event)
         {
             return EmitOperationWithResulType(Op.OpGroupAsyncCopy, ResultType, Execution, Destination, Source, NumElements, Stride, Event);

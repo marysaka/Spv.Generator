@@ -4,8 +4,6 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        // TODO: implements all relational & logical instructions
-
         public Instruction Any(uint ResultType, uint Vector)
         {
             return EmitOperationWithResulType(Op.OpAny, ResultType, Vector);

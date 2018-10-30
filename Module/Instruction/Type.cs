@@ -4,26 +4,15 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        public Instruction AddTypeDeclaration(Instruction Type, bool IsResult = false)
+        public Instruction AddTypeDeclaration(Instruction Type)
         {
             int ListIndex = TypesDeclarations.IndexOf(Type);
             // FIXME: IMPLEMENT EQUALS IN INSTRUCTION
             if (ListIndex < 0)
             {
-                // FIXME: EVERYTHING MUST BE A RESULT
-                if (IsResult)
+                if (!Type.HasResultTypeId)
                 {
-                    if (!Type.HasResultTypeId)
-                    {
-                        Type.SetResultTypeId(AllocateId());
-                    }
-                }
-                else
-                {
-                    if (!Type.HasTypeId)
-                    {
-                        Type.SetTypeId(AllocateId());
-                    }
+                    Type.SetResultTypeId(AllocateId());
                 }
 
                 TypesDeclarations.Add(Type);
@@ -79,13 +68,13 @@ namespace Spv.Generator
         public Instruction TypeVector(Instruction ComponentType, uint ComponentCount)
         {
             // TODO: capabilities & checks
-            return AddTypeDeclaration(CreateInstruction(Op.OpTypeVector, ComponentType.TypeId, ComponentCount));
+            return AddTypeDeclaration(CreateInstruction(Op.OpTypeVector, ComponentType.ResultTypeId, ComponentCount));
         }
 
         public Instruction TypeMatrix(Instruction ComponentType, uint ComponentCount)
         {
             // TODO: capabilities & checks
-            return AddTypeDeclaration(CreateInstruction(Op.OpTypeMatrix, ComponentType.TypeId, ComponentCount));
+            return AddTypeDeclaration(CreateInstruction(Op.OpTypeMatrix, ComponentType.ResultTypeId, ComponentCount));
         }
 
         public Instruction TypeImage(uint SampleType, Dim Dim, uint Depth, bool Arrayed, uint MS, uint Sampled, params AccessQualifier[] OptionalAccessQualifiers)
@@ -147,8 +136,8 @@ namespace Spv.Generator
         {
             Instruction TypeFunction = CreateInstruction(Op.OpTypeFunction);
 
-            TypeFunction.PushOperandTypeId(ReturnType);
-            TypeFunction.PushOperandTypeId(Params);
+            TypeFunction.PushOperandResultTypeId(ReturnType);
+            TypeFunction.PushOperandResultTypeId(Params);
 
             return AddTypeDeclaration(TypeFunction);
         }

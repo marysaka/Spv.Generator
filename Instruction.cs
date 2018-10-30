@@ -13,7 +13,7 @@ namespace Spv.Generator
 
         public List<uint> Words { get; private set; }
 
-        // optioanl
+        // Optional
         public bool HasTypeId { get; private set; }
         public bool HasResultTypeId { get; private set; }
         public uint TypeId { get; private set; }
@@ -105,7 +105,7 @@ namespace Spv.Generator
 
         public Instruction SetResultTypeId(Instruction ReturnType)
         {
-            return SetResultTypeId(ReturnType.TypeId);
+            return SetResultTypeId(ReturnType.ResultTypeId);
         }
 
         public Instruction SetResultTypeId(uint ResultTypeId)

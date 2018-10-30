@@ -6,12 +6,10 @@ namespace Spv.Generator
     {
         public Instruction CreateFunction(Instruction ResultType, FunctionControlMask FunctionControl, Instruction FunctionType)
         {
-            Instruction Function = CreateInstruction(Op.OpFunction);
+            Instruction Function = CreateOperationWithResulType(Op.OpFunction, ResultType.ResultTypeId);
 
-            Function.SetResultTypeId(AllocateId());
-            Function.SetTypeId(ResultType);
             Function.PushOperand((uint)FunctionControl);
-            Function.PushOperandTypeId(FunctionType);
+            Function.PushOperandResultTypeId(FunctionType);
 
             return Function;
         }

@@ -9,9 +9,9 @@ namespace Spv.Generator
             return EmitCode(CreateInstruction(Op.OpNop));
         }
 
-        public Instruction Undef(uint IdResultType)
+        public Instruction Undef(uint ResultType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpUndef).SetTypeId(IdResultType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpUndef, ResultType));
         }
     }
 }

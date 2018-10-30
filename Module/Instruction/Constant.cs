@@ -4,63 +4,62 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        public Instruction ConstantTrue(uint BoolType)
+        public Instruction ConstantTrue(uint ResultType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpConstantTrue).SetTypeId(BoolType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpConstantTrue, ResultType));
         }
 
-        public Instruction ConstantFalse(uint BoolType)
+        public Instruction ConstantFalse(uint ResultType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpConstantFalse).SetTypeId(BoolType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpConstantFalse, ResultType));
         }
 
-        public Instruction Constant(uint Type, params uint[] Value)
+        public Instruction Constant(uint ResultType, params uint[] Value)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpConstant, Value).SetTypeId(Type), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpConstant, ResultType, Value));
         }
 
-        public Instruction ConstantComposite(uint CompositeType, params uint[] Constituents)
+        public Instruction ConstantComposite(uint ResultType, params uint[] Constituents)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpConstantComposite, Constituents).SetTypeId(CompositeType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpConstantComposite, ResultType, Constituents));
         }
 
-        public Instruction ConstantSampler(uint SamplerType, SamplerAddressingMode SamplerAddressingMode, bool Normalized, SamplerFilterMode SamplerFilterMode)
+        public Instruction ConstantSampler(uint ResultType, SamplerAddressingMode SamplerAddressingMode, bool Normalized, SamplerFilterMode SamplerFilterMode)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpConstantSampler, SamplerType, (uint)SamplerAddressingMode, Normalized ? 1u : 0u, (uint)SamplerFilterMode).SetTypeId(SamplerType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpConstantSampler, ResultType, (uint)SamplerAddressingMode, Normalized ? 1u : 0u, (uint)SamplerFilterMode));
         }
 
-        public Instruction ConstantNull(uint Type)
+        public Instruction ConstantNull(uint ResultType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpConstantNull).SetTypeId(Type), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpConstantNull, ResultType));
         }
 
-        public Instruction SpecConstantTrue(uint BoolType)
+        public Instruction SpecConstantTrue(uint ResultType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpSpecConstantTrue).SetTypeId(BoolType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpSpecConstantTrue, ResultType));
         }
 
-        public Instruction SpecConstantFalse(uint BoolType)
+        public Instruction SpecConstantFalse(uint ResultType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpSpecConstantFalse).SetTypeId(BoolType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpSpecConstantFalse, ResultType));
         }
 
-        public Instruction SpecConstant(uint Type, params uint[] Value)
+        public Instruction SpecConstant(uint ResultType, params uint[] Value)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpSpecConstant, Value).SetTypeId(Type), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpSpecConstant, ResultType, Value));
         }
 
-        public Instruction SpecConstantComposite(uint CompositeType, params uint[] Constituents)
+        public Instruction SpecConstantComposite(uint ResultType, params uint[] Constituents)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpSpecConstantComposite, Constituents).SetTypeId(CompositeType), true);
+            return AddTypeDeclaration(CreateOperationWithResulType(Op.OpSpecConstantComposite, ResultType, Constituents));
         }
 
-        public Instruction SpecConstantOp(uint Type, Op Opcode, params uint[] Operands)
+        public Instruction SpecConstantOp(uint ResultType, Op Opcode, params uint[] Operands)
         {
-            Instruction SpecConstantOp = CreateInstruction(Op.OpSpecConstantOp, (uint)Opcode);
+            Instruction SpecConstantOp = CreateOperationWithResulType(Op.OpSpecConstantOp, ResultType,(uint)Opcode);
             SpecConstantOp.PushOperand(Operands);
-            SpecConstantOp.SetTypeId(Type);
 
-            return AddTypeDeclaration(SpecConstantOp, true);
+            return AddTypeDeclaration(SpecConstantOp);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Spv.Generator.Test
             Instruction TypeVoid       = ModuleTest.TypeVoid();
             Instruction TypeFloat      = ModuleTest.TypeFloat(32);
             Instruction TypeInt        = ModuleTest.TypeInt(32, true);
-            Instruction TypePointerInt = ModuleTest.TypePointer(StorageClass.Input, TypeInt.TypeId);
+            Instruction TypePointerInt = ModuleTest.TypePointer(StorageClass.Input, TypeInt.ResultTypeId);
 
 
             Instruction MainFunctionType = ModuleTest.TypeFunction(TypeVoid);
@@ -29,7 +29,7 @@ namespace Spv.Generator.Test
 
             ModuleTest.EmitCode(MainFunction);
             ModuleTest.Label();
-            ModuleTest.FunctionCall(TypeVoid.TypeId, SecondaryFunction.ResultTypeId);
+            ModuleTest.FunctionCall(TypeVoid.ResultTypeId, SecondaryFunction.ResultTypeId);
             ModuleTest.Return();
             ModuleTest.FunctionEnd();
 

@@ -57,7 +57,10 @@ namespace Spv.Generator
                 DebugInstruction.Encode(Writer);
             }
 
-            // 8. TODO: All annotation instructions
+            foreach (Instruction Annotation in Annotations)
+            {
+                Annotation.Encode(Writer);
+            }
 
             foreach (Instruction TypeDeclaration in TypesDeclarations)
             {

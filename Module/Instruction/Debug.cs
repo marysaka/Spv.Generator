@@ -21,9 +21,19 @@ namespace Spv.Generator
             return EmitDebug(SourceContinued);
         }
 
+        public Instruction Source(SourceLanguage SourceLanguage)
+        {
+            return EmitDebug(CreateInstruction(Op.OpSource, (uint)SourceLanguage));
+        }
+
+        public Instruction Source(SourceLanguage SourceLanguage, uint Version)
+        {
+            return EmitDebug(CreateInstruction(Op.OpSource, (uint)SourceLanguage, Version));
+        }
+
         public Instruction Source(SourceLanguage SourceLanguage, uint Version, uint File)
         {
-            return EmitDebug(CreateInstruction(Op.OpSourceContinued, (uint)SourceLanguage, Version, File));
+            return EmitDebug(CreateInstruction(Op.OpSource, (uint)SourceLanguage, Version, File));
         }
 
         public Instruction SourceExtension(string Extension)

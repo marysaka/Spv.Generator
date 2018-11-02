@@ -6,9 +6,7 @@ namespace Spv.Generator
     {
         public Instruction Variable(uint Type, StorageClass StorageClass)
         {
-            Instruction Variable = CreateInstruction(Op.OpVariable, (uint)StorageClass);
-            Variable.SetTypeId(Type);
-            Variable.SetResultTypeId(AllocateId());
+            Instruction Variable = CreateOperationWithResulType(Op.OpVariable, Type, (uint)StorageClass);
 
             if (Variable.IsGlobalVariable())
             {
@@ -22,26 +20,21 @@ namespace Spv.Generator
             return Variable;
         }
 
-        public Instruction ImageTexelPointer(uint ResultType, uint Type, uint Image, uint Coordinate, uint Sample)
+        public Instruction ImageTexelPointer(uint ResultType, uint Image, uint Coordinate, uint Sample)
         {
-            Instruction ImageTexelPointer = CreateInstruction(Op.OpImageTexelPointer, Image, Coordinate, Sample);
+            Instruction ImageTexelPointer = CreateOperationWithResulType(Op.OpImageTexelPointer, ResultType, Image, Coordinate, Sample);
 
-            ImageTexelPointer.SetTypeId(Type);
-            ImageTexelPointer.SetResultTypeId(ResultType);
             return EmitCode(ImageTexelPointer);
         }
 
-        public Instruction Load(uint ResultType, uint Type, uint Pointer, MemoryAccessShift MemoryAccess = 0)
+        public Instruction Load(uint ResultType, uint Pointer, MemoryAccessShift MemoryAccess = 0)
         {
-            Instruction Load = CreateInstruction(Op.OpLoad, Pointer);
+            Instruction Load = CreateOperationWithResulType(Op.OpLoad, ResultType, Pointer);
 
             if (MemoryAccess != 0)
             {
                 Load.PushOperand((uint)MemoryAccess);
             }
-
-            Load.SetTypeId(Type);
-            Load.SetResultTypeId(ResultType);
             return EmitCode(Load);
         }
 
@@ -80,60 +73,44 @@ namespace Spv.Generator
             return EmitCode(CopyMemorySized);
         }
 
-        public Instruction AccessChain(uint ResultType, uint Type, uint Base, params uint[] Indexes)
+        public Instruction AccessChain(uint ResultType, uint Base, params uint[] Indexes)
         {
-            Instruction AccessChain = CreateInstruction(Op.OpAccessChain, Base);
+            Instruction AccessChain = CreateOperationWithResulType(Op.OpAccessChain, ResultType, Base);
 
-            AccessChain.SetTypeId(Type);
-            AccessChain.SetResultTypeId(ResultType);
             AccessChain.PushOperand(Indexes);
             return EmitCode(AccessChain);
         }
 
-        public Instruction InBoundsAccessChain(uint ResultType, uint Type, uint Base, params uint[] Indexes)
+        public Instruction InBoundsAccessChain(uint ResultType, uint Base, params uint[] Indexes)
         {
-            Instruction InBoundsAccessChain = CreateInstruction(Op.OpInBoundsAccessChain, Base);
+            Instruction InBoundsAccessChain = CreateOperationWithResulType(Op.OpInBoundsAccessChain, ResultType, Base);
 
-            InBoundsAccessChain.SetTypeId(Type);
-            InBoundsAccessChain.SetResultTypeId(ResultType);
             InBoundsAccessChain.PushOperand(Indexes);
             return EmitCode(InBoundsAccessChain);
         }
 
-        public Instruction PtrAccessChain(uint ResultType, uint Type, uint Base, uint Element, params uint[] Indexes)
+        public Instruction PtrAccessChain(uint ResultType, uint Base, uint Element, params uint[] Indexes)
         {
-            Instruction PtrAccessChain = CreateInstruction(Op.OpPtrAccessChain, Base, Element);
+            Instruction PtrAccessChain = CreateOperationWithResulType(Op.OpPtrAccessChain, ResultType, Base, Element);
 
-            PtrAccessChain.SetTypeId(Type);
-            PtrAccessChain.SetResultTypeId(ResultType);
             PtrAccessChain.PushOperand(Indexes);
             return EmitCode(PtrAccessChain);
         }
 
-        public Instruction ArrayLength(uint ResultType, uint Type, uint StructureId, uint ArrayMember)
+        public Instruction ArrayLength(uint ResultType, uint StructureId, uint ArrayMember)
         {
-            Instruction ArrayLength = CreateInstruction(Op.OpArrayLength, StructureId, ArrayMember);
-            ArrayLength.SetTypeId(Type);
-            ArrayLength.SetResultTypeId(ResultType);
-
-            return EmitCode(ArrayLength);
+            return EmitOperationWithResulType(Op.OpArrayLength, ResultType, StructureId, ArrayMember);
         }
 
-        public Instruction GenericPtrMemSemantics(uint ResultType, uint Type, uint Pointer)
+        public Instruction GenericPtrMemSemantics(uint ResultType, uint Pointer)
         {
-            Instruction GenericPtrMemSemantics = CreateInstruction(Op.OpGenericPtrMemSemantics, Pointer);
-            GenericPtrMemSemantics.SetTypeId(Type);
-            GenericPtrMemSemantics.SetResultTypeId(ResultType);
-
-            return EmitCode(GenericPtrMemSemantics);
+            return EmitOperationWithResulType(Op.OpGenericPtrMemSemantics, ResultType, Pointer);
         }
 
-        public Instruction InBoundsPtrAccessChain(uint ResultType, uint Type, uint Base, uint Element, params uint[] Indexes)
+        public Instruction InBoundsPtrAccessChain(uint ResultType, uint Base, uint Element, params uint[] Indexes)
         {
-            Instruction InBoundsPtrAccessChain = CreateInstruction(Op.OpInBoundsPtrAccessChain, Base, Element);
+            Instruction InBoundsPtrAccessChain = CreateOperationWithResulType(Op.OpInBoundsPtrAccessChain, ResultType, Base, Element);
 
-            InBoundsPtrAccessChain.SetTypeId(Type);
-            InBoundsPtrAccessChain.SetResultTypeId(ResultType);
             InBoundsPtrAccessChain.PushOperand(Indexes);
             return EmitCode(InBoundsPtrAccessChain);
         }

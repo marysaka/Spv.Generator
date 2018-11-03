@@ -4,148 +4,139 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        private Instruction EmitArithmeticInstruction(Op Opcode, uint ResultType, params uint[] Values)
+        public Instruction SNegate(Instruction ResultType, Instruction Operand)
         {
-            Instruction Result = CreateInstruction(Opcode, Values);
-            Result.SetTypeId(ResultType);
-            Result.SetResultTypeId(AllocateId());
-
-            return EmitCode(Result);
+            return EmitOperationWithResulType(Op.OpSNegate, ResultType, Operand.ResultTypeId);
         }
 
-        public Instruction SNegate(uint ResultType, uint Operand)
+        public Instruction FNegate(Instruction ResultType, Instruction Operand)
         {
-            return EmitArithmeticInstruction(Op.OpSNegate, ResultType, Operand);
+            return EmitOperationWithResulType(Op.OpFNegate, ResultType, Operand.ResultTypeId);
         }
 
-        public Instruction FNegate(uint ResultType, uint Operand)
+        public Instruction IAdd(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpFNegate, ResultType, Operand);
+            return EmitOperationWithResulType(Op.OpIAdd, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction IAdd(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction FAdd(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpIAdd, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpFAdd, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction FAdd(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction ISub(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpFAdd, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpISub, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction ISub(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction FSub(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpISub, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpFSub, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction FSub(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction IMul(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpFSub, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpIMul, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction IMul(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction FMul(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpIMul, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpFMul, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction FMul(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction UDiv(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpFMul, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpUDiv, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction UDiv(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction SDiv(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpUDiv, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpSDiv, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction SDiv(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction FDiv(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpSDiv, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpFDiv, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction FDiv(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction UMod(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpFDiv, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpUMod, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction UMod(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction SRem(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpUMod, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpSRem, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction SRem(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction SMod(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpSRem, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpSMod, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction SMod(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction FRem(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpSMod, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpFRem, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction FRem(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction FMod(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpFRem, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpFMod, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction FMod(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction VectorTimesScalar(Instruction ResultType, Instruction Vector, Instruction Scalar)
         {
-            return EmitArithmeticInstruction(Op.OpFMod, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpVectorTimesScalar, ResultType, Vector.ResultTypeId, Scalar.ResultTypeId);
         }
 
-        public Instruction VectorTimesScalar(uint ResultType, uint Vector, uint Scalar)
+        public Instruction MatrixTimesScalar(Instruction ResultType, Instruction Matrix, Instruction Scalar)
         {
-            return EmitArithmeticInstruction(Op.OpVectorTimesScalar, ResultType, Vector, Scalar);
+            return EmitOperationWithResulType(Op.OpMatrixTimesScalar, ResultType, Matrix.ResultTypeId, Scalar.ResultTypeId);
         }
 
-        public Instruction MatrixTimesScalar(uint ResultType, uint Matrix, uint Scalar)
+        public Instruction VectorTimesMatrix(Instruction ResultType, Instruction Vector, Instruction Matrix)
         {
-            return EmitArithmeticInstruction(Op.OpMatrixTimesScalar, ResultType, Matrix, Scalar);
+            return EmitOperationWithResulType(Op.OpVectorTimesMatrix, ResultType, Vector.ResultTypeId, Matrix.ResultTypeId);
         }
 
-        public Instruction VectorTimesMatrix(uint ResultType, uint Vector, uint Matrix)
+        public Instruction MatrixTimesVector(Instruction ResultType, Instruction Matrix, Instruction Vector)
         {
-            return EmitArithmeticInstruction(Op.OpVectorTimesMatrix, ResultType, Vector, Matrix);
+            return EmitOperationWithResulType(Op.OpMatrixTimesVector, ResultType, Matrix.ResultTypeId, Vector.ResultTypeId);
         }
 
-        public Instruction MatrixTimesVector(uint ResultType, uint Matrix, uint Vector)
+        public Instruction MatrixTimesMatrix(Instruction ResultType, Instruction LeftMatrix, Instruction RightMatrix)
         {
-            return EmitArithmeticInstruction(Op.OpMatrixTimesVector, ResultType, Matrix, Vector);
+            return EmitOperationWithResulType(Op.OpMatrixTimesMatrix, ResultType, LeftMatrix.ResultTypeId, RightMatrix.ResultTypeId);
         }
 
-        public Instruction MatrixTimesMatrix(uint ResultType, uint LeftMatrix, uint RightMatrix)
+        public Instruction OuterProduct(Instruction ResultType, Instruction Vector1, Instruction Vector2)
         {
-            return EmitArithmeticInstruction(Op.OpMatrixTimesMatrix, ResultType, LeftMatrix, RightMatrix);
+            return EmitOperationWithResulType(Op.OpOuterProduct, ResultType, Vector1.ResultTypeId, Vector2.ResultTypeId);
         }
 
-        public Instruction OuterProduct(uint ResultType, uint Vector1, uint Vector2)
+        public Instruction Dot(Instruction ResultType, Instruction Vector1, Instruction Vector2)
         {
-            return EmitArithmeticInstruction(Op.OpOuterProduct, ResultType, Vector1, Vector2);
+            return EmitOperationWithResulType(Op.OpDot, ResultType, Vector1.ResultTypeId, Vector2.ResultTypeId);
         }
 
-        public Instruction Dot(uint ResultType, uint Vector1, uint Vector2)
+        public Instruction IAddCarry(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpDot, ResultType, Vector1, Vector2);
+            return EmitOperationWithResulType(Op.OpIAddCarry, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction IAddCarry(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction ISubBorrow(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpIAddCarry, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpISubBorrow, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction ISubBorrow(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction UMulExtended(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpISubBorrow, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpUMulExtended, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
 
-        public Instruction UMulExtended(uint ResultType, uint Operand1, uint Operand2)
+        public Instruction SMulExtended(Instruction ResultType, Instruction Operand1, Instruction Operand2)
         {
-            return EmitArithmeticInstruction(Op.OpUMulExtended, ResultType, Operand1, Operand2);
-        }
-
-        public Instruction SMulExtended(uint ResultType, uint Operand1, uint Operand2)
-        {
-            return EmitArithmeticInstruction(Op.OpSMulExtended, ResultType, Operand1, Operand2);
+            return EmitOperationWithResulType(Op.OpSMulExtended, ResultType, Operand1.ResultTypeId, Operand2.ResultTypeId);
         }
     }
 }

@@ -4,63 +4,58 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        private Instruction EmitCompositeInstruction(Op Opcode, uint ResultType, params uint[] Values)
-        {
-            Instruction Result = CreateInstruction(Opcode, Values);
-            Result.SetTypeId(ResultType);
-            Result.SetResultTypeId(AllocateId());
 
-            return EmitCode(Result);
+        public Instruction VectorExtractDynamic(Instruction ResultType, Instruction Vector, Instruction Index)
+        {
+            return EmitOperationWithResulType(Op.OpVectorExtractDynamic, ResultType, Vector.ResultTypeId, Index.ResultTypeId);
         }
 
-        public Instruction VectorExtractDynamic(uint ResultType, uint Vector, uint Index)
+        public Instruction VectorInsertDynamic(Instruction ResultType, Instruction Vector, Instruction Component, Instruction Index)
         {
-            return EmitCompositeInstruction(Op.OpVectorExtractDynamic, ResultType, Vector, Index);
+            return EmitOperationWithResulType(Op.OpVectorInsertDynamic, ResultType, Vector.ResultTypeId, Component.ResultTypeId, Index.ResultTypeId);
         }
 
-        public Instruction VectorInsertDynamic(uint ResultType, uint Vector, uint Component, uint Index)
+        public Instruction VectorShuffle(Instruction ResultType, Instruction Vector1, Instruction Vector2, params uint[] Components)
         {
-            return EmitCompositeInstruction(Op.OpVectorInsertDynamic, ResultType, Vector, Component, Index);
-        }
-
-        public Instruction VectorShuffle(uint ResutType, uint Vector1, uint Vector2, params uint[] Components)
-        {
-            Instruction VectorShuffle = EmitCompositeInstruction(Op.OpVectorShuffle, ResutType, Vector1, Vector2);
+            Instruction VectorShuffle = CreateOperationWithResulType(Op.OpVectorShuffle, ResultType, Vector1.ResultTypeId, Vector2.ResultTypeId);
 
             VectorShuffle.PushOperand(Components);
 
-            return VectorShuffle;
+            return EmitCode(VectorShuffle);
         }
 
-        public Instruction CompositeConstruct(uint ResultType, params uint[] Constituents)
+        public Instruction CompositeConstruct(Instruction ResultType, params Instruction[] Constituents)
         {
-            return EmitCompositeInstruction(Op.OpCompositeConstruct, ResultType, Constituents);
+            Instruction CompositeConstruct = CreateOperationWithResulType(Op.OpCompositeConstruct, ResultType);
+            CompositeConstruct.PushOperandResultTypeId(Constituents);
+
+            return EmitCode(CompositeConstruct);
         }
 
-        public Instruction CompositeExtract(uint ResultType, uint Composite, params uint[] Indexes)
+        public Instruction CompositeExtract(Instruction ResultType, Instruction Composite, params uint[] Indexes)
         {
-            Instruction CompositeExtract = EmitCompositeInstruction(Op.OpCompositeExtract, ResultType, Composite);
+            Instruction CompositeExtract = CreateOperationWithResulType(Op.OpCompositeExtract, ResultType, Composite.ResultTypeId);
             CompositeExtract.PushOperand(Indexes);
 
-            return CompositeExtract;
+            return EmitCode(CompositeExtract);
         }
 
-        public Instruction CompositeInsert(uint ResultType, uint Object, uint Composite, params uint[] Indexes)
+        public Instruction CompositeInsert(Instruction ResultType, Instruction Object, Instruction Composite, params uint[] Indexes)
         {
-            Instruction CompositeInsert = EmitCompositeInstruction(Op.OpCompositeInsert, ResultType, Object, Composite);
+            Instruction CompositeInsert = CreateOperationWithResulType(Op.OpCompositeInsert, ResultType, Object.ResultTypeId, Composite.ResultTypeId);
             CompositeInsert.PushOperand(Indexes);
 
-            return CompositeInsert;
+            return EmitCode(CompositeInsert);
         }
 
-        public Instruction CopyObject(uint ResultType, uint Operand)
+        public Instruction CopyObject(Instruction ResultType, Instruction Operand)
         {
-            return EmitCompositeInstruction(Op.OpCopyObject, ResultType, Operand);
+            return EmitOperationWithResulType(Op.OpCopyObject, ResultType, Operand.ResultTypeId);
         }
 
-        public Instruction Transpose(uint ResultType, uint Matrix)
+        public Instruction Transpose(Instruction ResultType, Instruction Matrix)
         {
-            return EmitCompositeInstruction(Op.OpTranspose, ResultType, Matrix);
+            return EmitOperationWithResulType(Op.OpTranspose, ResultType, Matrix.ResultTypeId);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Spv.Generator
             return EmitCode(CreateInstruction(Op.OpNop));
         }
 
-        public Instruction Undef(uint ResultType)
+        public Instruction Undef(Instruction ResultType)
         {
             return AddTypeDeclaration(CreateOperationWithResulType(Op.OpUndef, ResultType));
         }

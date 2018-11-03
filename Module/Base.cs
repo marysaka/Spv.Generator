@@ -49,16 +49,17 @@ namespace Spv.Generator
             return new Instruction(Opcode, new List<uint>(Words));
         }
 
-        private Instruction CreateOperationWithResulType(Op Opcode, uint ResultType, params uint[] Values)
+        private Instruction CreateOperationWithResulType(Op Opcode, Instruction ResultType, params uint[] Values)
         {
-            Instruction Result = CreateInstruction(Opcode, Values);
+            Instruction Result = CreateInstruction(Opcode);
             Result.SetTypeId(ResultType);
             Result.SetResultTypeId(AllocateId());
+            Result.PushOperand(Values);
 
             return Result;
         }
 
-        private Instruction EmitOperationWithResulType(Op Opcode, uint ResultType, params uint[] Values)
+        private Instruction EmitOperationWithResulType(Op Opcode, Instruction ResultType, params uint[] Values)
         {
             return EmitCode(CreateOperationWithResulType(Opcode, ResultType, Values));
         }

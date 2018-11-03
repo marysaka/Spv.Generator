@@ -14,14 +14,14 @@ namespace Spv.Generator
             return EmitCode(CreateInstruction(Op.OpEndPrimitive));
         }
 
-        public Instruction EmitStreamVertex(uint Stream)
+        public Instruction EmitStreamVertex(Instruction Stream)
         {
-            return EmitCode(CreateInstruction(Op.OpEmitStreamVertex, Stream));
+            return EmitCode(CreateInstruction(Op.OpEmitStreamVertex, Stream.ResultTypeId));
         }
 
-        public Instruction EndStreamPrimitive(uint Stream)
+        public Instruction EndStreamPrimitive(Instruction Stream)
         {
-            return EmitCode(CreateInstruction(Op.OpEndStreamPrimitive, Stream));
+            return EmitCode(CreateInstruction(Op.OpEndStreamPrimitive, Stream.ResultTypeId));
         }
     }
 }

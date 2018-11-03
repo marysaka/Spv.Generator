@@ -10,17 +10,17 @@ namespace Spv.Generator
             return Instruction;
         }
 
-        public Instruction Decorate(uint Target, Decoration Decoration, params uint[] Literals)
+        public Instruction Decorate(Instruction Target, Decoration Decoration, params uint[] Literals)
         {
-            Instruction Decorate = CreateInstruction(Op.OpDecorate, Target, (uint)Decoration);
+            Instruction Decorate = CreateInstruction(Op.OpDecorate, Target.ResultTypeId, (uint)Decoration);
             Decorate.PushOperand(Literals);
 
             return EmitAnnotation(Decorate);
         }
 
-        public Instruction MemberDecorate(uint StructureType, uint Member, Decoration Decoration, params uint[] Literals)
+        public Instruction MemberDecorate(Instruction StructureType, uint Member, Decoration Decoration, params uint[] Literals)
         {
-            Instruction MemberDecorate = CreateInstruction(Op.OpMemberDecorate, StructureType, Member, (uint)Decoration);
+            Instruction MemberDecorate = CreateInstruction(Op.OpMemberDecorate, StructureType.ResultTypeId, Member, (uint)Decoration);
             MemberDecorate.PushOperand(Literals);
 
             return EmitAnnotation(MemberDecorate);
@@ -34,17 +34,17 @@ namespace Spv.Generator
             return EmitAnnotation(DecorationGroup);
         }
 
-        public Instruction GroupDecorate(uint DecorationGroup, params uint[] Targets)
+        public Instruction GroupDecorate(Instruction DecorationGroup, params uint[] Targets)
         {
-            Instruction GroupDecorate = CreateInstruction(Op.OpGroupDecorate, DecorationGroup);
+            Instruction GroupDecorate = CreateInstruction(Op.OpGroupDecorate, DecorationGroup.ResultTypeId);
             GroupDecorate.PushOperand(Targets);
 
             return EmitAnnotation(GroupDecorate);
         }
 
-        public Instruction GroupMemberDecorate(uint DecorationGroup, params uint[] Targets)
+        public Instruction GroupMemberDecorate(Instruction DecorationGroup, params uint[] Targets)
         {
-            Instruction GroupMemberDecorate = CreateInstruction(Op.OpGroupMemberDecorate, DecorationGroup);
+            Instruction GroupMemberDecorate = CreateInstruction(Op.OpGroupMemberDecorate, DecorationGroup.ResultTypeId);
             GroupMemberDecorate.PushOperand(Targets);
 
             return EmitAnnotation(GroupMemberDecorate);

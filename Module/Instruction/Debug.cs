@@ -31,9 +31,9 @@ namespace Spv.Generator
             return EmitDebug(CreateInstruction(Op.OpSource, (uint)SourceLanguage, Version));
         }
 
-        public Instruction Source(SourceLanguage SourceLanguage, uint Version, uint File)
+        public Instruction Source(SourceLanguage SourceLanguage, uint Version, Instruction File)
         {
-            return EmitDebug(CreateInstruction(Op.OpSource, (uint)SourceLanguage, Version, File));
+            return EmitDebug(CreateInstruction(Op.OpSource, (uint)SourceLanguage, Version, File.ResultTypeId));
         }
 
         public Instruction SourceExtension(string Extension)
@@ -45,36 +45,36 @@ namespace Spv.Generator
             return EmitDebug(SourceExtension);
         }
 
-        public Instruction Name(uint Target, string Name)
+        public Instruction Name(Instruction Target, string Name)
         {
-            Instruction NameInstruction = CreateInstruction(Op.OpName, Target);
+            Instruction NameInstruction = CreateInstruction(Op.OpName, Target.ResultTypeId);
 
             NameInstruction.PushOperand(Name);
 
             return EmitDebug(NameInstruction);
         }
 
-        public Instruction MemberName(uint Type, uint Member, string Name)
+        public Instruction MemberName(Instruction Type, uint Member, string Name)
         {
-            Instruction MemberName = CreateInstruction(Op.OpMemberName, Type, Member);
+            Instruction MemberName = CreateInstruction(Op.OpMemberName, Type.ResultTypeId, Member);
 
             MemberName.PushOperand(Name);
 
             return EmitDebug(MemberName);
         }
 
-        public Instruction String(uint Target, string Name)
+        public Instruction String(string Name)
         {
-            Instruction String = CreateInstruction(Op.OpString, Target);
-
+            Instruction String = CreateInstruction(Op.OpString);
+            String.SetResultTypeId(AllocateId());
             String.PushOperand(Name);
 
             return EmitDebug(String);
         }
 
-        public Instruction Line(uint File, uint Line, uint Column)
+        public Instruction Line(Instruction File, uint Line, uint Column)
         {
-            return EmitCode(CreateInstruction(Op.OpLine, File, Line, Column));
+            return EmitCode(CreateInstruction(Op.OpLine, File.ResultTypeId, Line, Column));
         }
 
         public Instruction NoLine()

@@ -4,77 +4,77 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        public Instruction EnqueueMarker(uint ResultType, uint Queue, uint NumEvents, uint WaitEvents, uint RetEvent)
+        public Instruction EnqueueMarker(Instruction ResultType, Instruction Queue, Instruction NumEvents, Instruction WaitEvents, Instruction RetEvent)
         {
-            return EmitOperationWithResulType(Op.OpEnqueueMarker, ResultType, Queue, NumEvents, WaitEvents, RetEvent);
+            return EmitOperationWithResulType(Op.OpEnqueueMarker, ResultType, Queue.ResultTypeId, NumEvents.ResultTypeId, WaitEvents.ResultTypeId, RetEvent.ResultTypeId);
         }
 
-        public Instruction EnqueueKernel(uint ResultType, uint Queue, uint Flags, uint NDRange, uint NumEvents, uint WaitEvents, uint RetEvent, uint Invoke, uint Param, uint ParamSize, uint ParamAlign, params uint[] LocalSize)
+        public Instruction EnqueueKernel(Instruction ResultType, Instruction Queue, Instruction Flags, Instruction NDRange, Instruction NumEvents, Instruction WaitEvents, Instruction RetEvent, Instruction Invoke, Instruction Param, Instruction ParamSize, Instruction ParamAlign, params Instruction[] LocalSize)
         {
-            Instruction EnqueueKernel = EmitOperationWithResulType(Op.OpEnqueueKernel, ResultType, Queue, Flags, NDRange, NumEvents, WaitEvents, RetEvent, Invoke, Param, ParamSize, ParamAlign);
-            EnqueueKernel.PushOperand(LocalSize);
+            Instruction EnqueueKernel = EmitOperationWithResulType(Op.OpEnqueueKernel, ResultType, Queue.ResultTypeId, Flags.ResultTypeId, NDRange.ResultTypeId, NumEvents.ResultTypeId, WaitEvents.ResultTypeId, RetEvent.ResultTypeId, Invoke.ResultTypeId, Param.ResultTypeId, ParamSize.ResultTypeId, ParamAlign.ResultTypeId);
+            EnqueueKernel.PushOperandResultTypeId(LocalSize);
 
             return EnqueueKernel;
         }
 
-        public Instruction GetKernelNDrangeSubGroupCount(uint ResultType, uint NDRange, uint Invoke, uint Param, uint ParamSize, uint ParamAlign)
+        public Instruction GetKernelNDrangeSubGroupCount(Instruction ResultType, Instruction NDRange, Instruction Invoke, Instruction Param, Instruction ParamSize, Instruction ParamAlign)
         {
-            return EmitOperationWithResulType(Op.OpGetKernelNDrangeSubGroupCount, ResultType, NDRange, Invoke, Param, ParamSize, ParamAlign);
+            return EmitOperationWithResulType(Op.OpGetKernelNDrangeSubGroupCount, ResultType, NDRange.ResultTypeId, Invoke.ResultTypeId, Param.ResultTypeId, ParamSize.ResultTypeId, ParamAlign.ResultTypeId);
         }
 
-        public Instruction GetKernelNDrangeMaxSubGroupSize(uint ResultType, uint NDRange, uint Invoke, uint Param, uint ParamSize, uint ParamAlign)
+        public Instruction GetKernelNDrangeMaxSubGroupSize(Instruction ResultType, Instruction NDRange, Instruction Invoke, Instruction Param, Instruction ParamSize, Instruction ParamAlign)
         {
-            return EmitOperationWithResulType(Op.OpGetKernelNDrangeMaxSubGroupSize, ResultType, NDRange, Invoke, Param, ParamSize, ParamAlign);
+            return EmitOperationWithResulType(Op.OpGetKernelNDrangeMaxSubGroupSize, ResultType, NDRange.ResultTypeId, Invoke.ResultTypeId, Param.ResultTypeId, ParamSize.ResultTypeId, ParamAlign.ResultTypeId);
         }
 
-        public Instruction GetKernelWorkGroupSize(uint ResultType, uint Invoke, uint Param, uint ParamSize, uint ParamAlign)
+        public Instruction GetKernelWorkGroupSize(Instruction ResultType, Instruction Invoke, Instruction Param, Instruction ParamSize, Instruction ParamAlign)
         {
-            return EmitOperationWithResulType(Op.OpGetKernelWorkGroupSize, ResultType, Invoke, Param, ParamSize, ParamAlign);
+            return EmitOperationWithResulType(Op.OpGetKernelWorkGroupSize, ResultType, Invoke.ResultTypeId, Param.ResultTypeId, ParamSize.ResultTypeId, ParamAlign.ResultTypeId);
         }
 
-        public Instruction GetKernelPreferredWorkGroupSizeMultiple(uint ResultType, uint Invoke, uint Param, uint ParamSize, uint ParamAlign)
+        public Instruction GetKernelPreferredWorkGroupSizeMultiple(Instruction ResultType, Instruction Invoke, Instruction Param, Instruction ParamSize, Instruction ParamAlign)
         {
-            return EmitOperationWithResulType(Op.OpGetKernelPreferredWorkGroupSizeMultiple, ResultType, Invoke, Param, ParamSize, ParamAlign);
+            return EmitOperationWithResulType(Op.OpGetKernelPreferredWorkGroupSizeMultiple, ResultType, Invoke.ResultTypeId, Param.ResultTypeId, ParamSize.ResultTypeId, ParamAlign.ResultTypeId);
         }
 
-        public Instruction RetainEvent(uint Event)
+        public Instruction RetainEvent(Instruction Event)
         {
-            return EmitCode(CreateInstruction(Op.OpRetainEvent, Event));
+            return EmitCode(CreateInstruction(Op.OpRetainEvent, Event.ResultTypeId));
         }
 
-        public Instruction ReleaseEvent(uint Event)
+        public Instruction ReleaseEvent(Instruction Event)
         {
-            return EmitCode(CreateInstruction(Op.OpReleaseEvent, Event));
+            return EmitCode(CreateInstruction(Op.OpReleaseEvent, Event.ResultTypeId));
         }
 
-        public Instruction CreateUserEvent(uint ResultType)
+        public Instruction CreateUserEvent(Instruction ResultType)
         {
             return EmitOperationWithResulType(Op.OpCreateUserEvent, ResultType);
         }
 
-        public Instruction IsValidEvent(uint ResultType, uint Event)
+        public Instruction IsValidEvent(Instruction ResultType, Instruction Event)
         {
-            return EmitOperationWithResulType(Op.OpIsValidEvent, ResultType, Event);
+            return EmitOperationWithResulType(Op.OpIsValidEvent, ResultType, Event.ResultTypeId);
         }
 
-        public Instruction SetUserEventStatus(uint Event, uint Status)
+        public Instruction SetUserEventStatus(Instruction Event, Instruction Status)
         {
-            return EmitCode(CreateInstruction(Op.OpSetUserEventStatus, Event, Status));
+            return EmitCode(CreateInstruction(Op.OpSetUserEventStatus, Event.ResultTypeId, Status.ResultTypeId));
         }
 
-        public Instruction CaptureEventProfilingInfo(uint Event, uint ProfilingInfo, uint Value)
+        public Instruction CaptureEventProfilingInfo(Instruction Event, Instruction ProfilingInfo, Instruction Value)
         {
-            return EmitCode(CreateInstruction(Op.OpCaptureEventProfilingInfo, Event, ProfilingInfo, Value));
+            return EmitCode(CreateInstruction(Op.OpCaptureEventProfilingInfo, Event.ResultTypeId, ProfilingInfo.ResultTypeId, Value.ResultTypeId));
         }
 
-        public Instruction GetDefaultQueue(uint ResultType)
+        public Instruction GetDefaultQueue(Instruction ResultType)
         {
             return EmitOperationWithResulType(Op.OpGetDefaultQueue, ResultType);
         }
 
-        public Instruction BuildNDRange(uint ResultType, uint GlobalWorkSize, uint LocalWorkSize, uint GlobalWorkOffset)
+        public Instruction BuildNDRange(Instruction ResultType, Instruction GlobalWorkSize, Instruction LocalWorkSize, Instruction GlobalWorkOffset)
         {
-            return EmitOperationWithResulType(Op.OpBuildNDRange, ResultType, GlobalWorkSize, LocalWorkSize, GlobalWorkOffset);
+            return EmitOperationWithResulType(Op.OpBuildNDRange, ResultType, GlobalWorkSize.ResultTypeId, LocalWorkSize.ResultTypeId, GlobalWorkOffset.ResultTypeId);
         }
     }
 }

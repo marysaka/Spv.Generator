@@ -4,49 +4,49 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        public Instruction DPdx(uint ResultType, uint P)
+        public Instruction DPdx(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpDPdx, ResultType, P);
+            return EmitOperationWithResulType(Op.OpDPdx, ResultType, P.ResultTypeId);
         }
 
-        public Instruction DPdy(uint ResultType, uint P)
+        public Instruction DPdy(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpDPdy, ResultType, P);
+            return EmitOperationWithResulType(Op.OpDPdy, ResultType, P.ResultTypeId);
         }
 
-        public Instruction Fwidth(uint ResultType, uint P)
+        public Instruction Fwidth(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpFwidth, ResultType, P);
+            return EmitOperationWithResulType(Op.OpFwidth, ResultType, P.ResultTypeId);
         }
 
-        public Instruction DPdxFine(uint ResultType, uint P)
+        public Instruction DPdxFine(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpDPdxFine, ResultType, P);
+            return EmitOperationWithResulType(Op.OpDPdxFine, ResultType, P.ResultTypeId);
         }
 
-        public Instruction DPdyFine(uint ResultType, uint P)
+        public Instruction DPdyFine(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpDPdyFine, ResultType, P);
+            return EmitOperationWithResulType(Op.OpDPdyFine, ResultType, P.ResultTypeId);
         }
 
-        public Instruction FwidthFine(uint ResultType, uint P)
+        public Instruction FwidthFine(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpFwidthFine, ResultType, P);
+            return EmitOperationWithResulType(Op.OpFwidthFine, ResultType, P.ResultTypeId);
         }
 
-        public Instruction DPdxCoarse(uint ResultType, uint P)
+        public Instruction DPdxCoarse(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpDPdxCoarse, ResultType, P);
+            return EmitOperationWithResulType(Op.OpDPdxCoarse, ResultType, P.ResultTypeId);
         }
 
-        public Instruction DPdyCoarse(uint ResultType, uint P)
+        public Instruction DPdyCoarse(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpDPdyCoarse, ResultType, P);
+            return EmitOperationWithResulType(Op.OpDPdyCoarse, ResultType, P.ResultTypeId);
         }
 
-        public Instruction FwidthCoarse(uint ResultType, uint P)
+        public Instruction FwidthCoarse(Instruction ResultType, Instruction P)
         {
-            return EmitOperationWithResulType(Op.OpFwidthCoarse, ResultType, P);
+            return EmitOperationWithResulType(Op.OpFwidthCoarse, ResultType, P.ResultTypeId);
         }
 
     }

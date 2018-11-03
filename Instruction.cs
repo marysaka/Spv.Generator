@@ -98,9 +98,9 @@ namespace Spv.Generator
             return this;
         }
 
-        public Instruction SetTypeId(Instruction TypeId)
+        public Instruction SetTypeId(Instruction Type)
         {
-            return SetTypeId(TypeId.TypeId);
+            return SetTypeId(Type.ResultTypeId);
         }
 
         public Instruction SetResultTypeId(Instruction ReturnType)

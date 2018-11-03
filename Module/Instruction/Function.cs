@@ -6,7 +6,7 @@ namespace Spv.Generator
     {
         public Instruction CreateFunction(Instruction ResultType, FunctionControlMask FunctionControl, Instruction FunctionType)
         {
-            Instruction Function = CreateOperationWithResulType(Op.OpFunction, ResultType.ResultTypeId);
+            Instruction Function = CreateOperationWithResulType(Op.OpFunction, ResultType);
 
             Function.PushOperand((uint)FunctionControl);
             Function.PushOperandResultTypeId(FunctionType);
@@ -19,7 +19,7 @@ namespace Spv.Generator
             return EmitCode(CreateFunction(ResultType, FunctionControl, FunctionType));
         }
 
-        public Instruction FunctionParameter(uint ResultType)
+        public Instruction FunctionParameter(Instruction ResultType)
         {
             return EmitCode(CreateInstruction(Op.OpFunctionParameter).SetTypeId(ResultType).SetResultTypeId(AllocateId()));
         }
@@ -29,13 +29,10 @@ namespace Spv.Generator
             return EmitCode(CreateInstruction(Op.OpFunctionEnd));
         }
 
-        public Instruction FunctionCall(uint ResultType, uint Function, params uint[] Arguments)
+        public Instruction FunctionCall(Instruction ResultType, Instruction Function, params Instruction[] Arguments)
         {
-            Instruction FunctionCall = CreateInstruction(Op.OpFunctionCall, Function);
-
-            FunctionCall.SetResultTypeId(AllocateId());
-            FunctionCall.SetTypeId(ResultType);
-            FunctionCall.PushOperand(Arguments);
+            Instruction FunctionCall = CreateOperationWithResulType(Op.OpFunctionCall, ResultType, Function.ResultTypeId);
+            FunctionCall.PushOperandResultTypeId(Arguments);
 
             return EmitCode(FunctionCall);
         }

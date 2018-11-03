@@ -4,78 +4,70 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        private Instruction EmitConversionInstruction(Op Opcode, uint ResultType, params uint[] Values)
-        {
-            Instruction Result = CreateInstruction(Opcode, Values);
-            Result.SetTypeId(ResultType);
-            Result.SetResultTypeId(AllocateId());
 
-            return EmitCode(Result);
+        public Instruction ConvertUToF(Instruction ResultType, Instruction UnsignedValue)
+        {
+            return EmitOperationWithResulType(Op.OpConvertUToF, ResultType, UnsignedValue.ResultTypeId);
         }
 
-        public Instruction ConvertUToF(uint ResultType, uint UnsignedValue)
+        public Instruction UConvert(Instruction ResultType, Instruction UnsignedValue)
         {
-            return EmitConversionInstruction(Op.OpConvertUToF, ResultType, UnsignedValue);
+            return EmitOperationWithResulType(Op.OpUConvert, ResultType, UnsignedValue.ResultTypeId);
         }
 
-        public Instruction UConvert(uint ResultType, uint UnsignedValue)
+        public Instruction SConvert(Instruction ResultType, Instruction SignedValue)
         {
-            return EmitConversionInstruction(Op.OpUConvert, ResultType, UnsignedValue);
+            return EmitOperationWithResulType(Op.OpSConvert, ResultType, SignedValue.ResultTypeId);
         }
 
-        public Instruction SConvert(uint ResultType, uint SignedValue)
+        public Instruction FConvert(Instruction ResultType, Instruction FloatValue)
         {
-            return EmitConversionInstruction(Op.OpSConvert, ResultType, SignedValue);
+            return EmitOperationWithResulType(Op.OpFConvert, ResultType, FloatValue.ResultTypeId);
         }
 
-        public Instruction FConvert(uint ResultType, uint FloatValue)
+        public Instruction QuantizeToF16(Instruction ResultType, Instruction Value)
         {
-            return EmitConversionInstruction(Op.OpFConvert, ResultType, FloatValue);
+            return EmitOperationWithResulType(Op.OpQuantizeToF16, ResultType, Value.ResultTypeId);
         }
 
-        public Instruction QuantizeToF16(uint ResultType, uint Value)
+        public Instruction ConvertPtrToU(Instruction ResultType, Instruction Pointer)
         {
-            return EmitConversionInstruction(Op.OpQuantizeToF16, ResultType, Value);
+            return EmitOperationWithResulType(Op.OpConvertPtrToU, ResultType, Pointer.ResultTypeId);
         }
 
-        public Instruction ConvertPtrToU(uint ResultType, uint Pointer)
+        public Instruction SatConvertSToU(Instruction ResultType, Instruction SignedValue)
         {
-            return EmitConversionInstruction(Op.OpConvertPtrToU, ResultType, Pointer);
+            return EmitOperationWithResulType(Op.OpSatConvertSToU, ResultType, SignedValue.ResultTypeId);
         }
 
-        public Instruction SatConvertSToU(uint ResultType, uint SignedValue)
+        public Instruction SatConvertUToS(Instruction ResultType, Instruction UnsignedValue)
         {
-            return EmitConversionInstruction(Op.OpSatConvertSToU, ResultType, SignedValue);
+            return EmitOperationWithResulType(Op.OpSatConvertUToS, ResultType, UnsignedValue.ResultTypeId);
         }
 
-        public Instruction SatConvertUToS(uint ResultType, uint UnsignedValue)
+        public Instruction ConvertUToPtr(Instruction ResultType, Instruction IntegerValue)
         {
-            return EmitConversionInstruction(Op.OpSatConvertUToS, ResultType, UnsignedValue);
+            return EmitOperationWithResulType(Op.OpConvertUToPtr, ResultType, IntegerValue.ResultTypeId);
         }
 
-        public Instruction ConvertUToPtr(uint ResultType, uint IntegerValue)
+        public Instruction PtrCastToGeneric(Instruction ResultType, Instruction Pointer)
         {
-            return EmitConversionInstruction(Op.OpConvertUToPtr, ResultType, IntegerValue);
+            return EmitOperationWithResulType(Op.OpPtrCastToGeneric, ResultType, Pointer.ResultTypeId);
         }
 
-        public Instruction PtrCastToGeneric(uint ResultType, uint Pointer)
+        public Instruction GenericCastToPtr(Instruction ResultType, Instruction Pointer)
         {
-            return EmitConversionInstruction(Op.OpPtrCastToGeneric, ResultType, Pointer);
+            return EmitOperationWithResulType(Op.OpGenericCastToPtr, ResultType, Pointer.ResultTypeId);
         }
 
-        public Instruction GenericCastToPtr(uint ResultType, uint Pointer)
+        public Instruction GenericCastToPtrExplicit(Instruction ResultType, Instruction Pointer, StorageClass Storage)
         {
-            return EmitConversionInstruction(Op.OpGenericCastToPtr, ResultType, Pointer);
+            return EmitOperationWithResulType(Op.OpGenericCastToPtrExplicit, ResultType, Pointer.ResultTypeId, (uint)Storage);
         }
 
-        public Instruction GenericCastToPtrExplicit(uint ResultType, uint Pointer, StorageClass Storage)
+        public Instruction Bitcast(Instruction ResultType, Instruction Operand)
         {
-            return EmitConversionInstruction(Op.OpGenericCastToPtrExplicit, ResultType, Pointer, (uint)Storage);
-        }
-
-        public Instruction Bitcast(uint ResultType, uint Operand)
-        {
-            return EmitConversionInstruction(Op.OpBitcast, ResultType, Operand);
+            return EmitOperationWithResulType(Op.OpBitcast, ResultType, Operand.ResultTypeId);
         }
         
     }

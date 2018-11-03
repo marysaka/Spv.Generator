@@ -4,94 +4,94 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        public Instruction AtomicLoad(uint ResultType, uint Pointer, uint Scope, uint Semantics)
+        public Instruction AtomicLoad(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics)
         {
-            return EmitOperationWithResulType(Op.OpAtomicLoad, ResultType, Pointer, Scope, Semantics);
+            return EmitOperationWithResulType(Op.OpAtomicLoad, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId);
         }
 
-        public Instruction AtomicStore(uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicStore(Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitCode(CreateInstruction(Op.OpAtomicStore, Pointer, Scope, Semantics, Value));
+            return EmitCode(CreateInstruction(Op.OpAtomicStore, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId));
         }
 
-        public Instruction AtomicExchange(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicExchange(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicExchange, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicExchange, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicCompareExchange(uint ResultType, uint Pointer, uint Scope, uint EqualSemantics, uint UnEqualSemantics, uint Value, uint Comparator)
+        public Instruction AtomicCompareExchange(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction EqualSemantics, Instruction UnEqualSemantics, Instruction Value, Instruction Comparator)
         {
-            return EmitOperationWithResulType(Op.OpAtomicCompareExchange, ResultType, Pointer, Scope, EqualSemantics, UnEqualSemantics, Value, Comparator);
+            return EmitOperationWithResulType(Op.OpAtomicCompareExchange, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, EqualSemantics.ResultTypeId, UnEqualSemantics.ResultTypeId, Value.ResultTypeId, Comparator.ResultTypeId);
         }
 
-        public Instruction AtomicCompareExchangeWeak(uint ResultType, uint Pointer, uint Scope, uint EqualSemantics, uint UnEqualSemantics, uint Value, uint Comparator)
+        public Instruction AtomicCompareExchangeWeak(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction EqualSemantics, Instruction UnEqualSemantics, Instruction Value, Instruction Comparator)
         {
-            return EmitOperationWithResulType(Op.OpAtomicCompareExchangeWeak, ResultType, Pointer, Scope, EqualSemantics, UnEqualSemantics, Value, Comparator);
+            return EmitOperationWithResulType(Op.OpAtomicCompareExchangeWeak, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, EqualSemantics.ResultTypeId, UnEqualSemantics.ResultTypeId, Value.ResultTypeId, Comparator.ResultTypeId);
         }
 
-        public Instruction AtomicIIncrement(uint ResultType, uint Pointer, uint Scope, uint Semantics)
+        public Instruction AtomicIIncrement(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics)
         {
-            return EmitOperationWithResulType(Op.OpAtomicIIncrement, ResultType, Pointer, Scope, Semantics);
+            return EmitOperationWithResulType(Op.OpAtomicIIncrement, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId);
         }
 
-        public Instruction AtomicIDecrement(uint ResultType, uint Pointer, uint Scope, uint Semantics)
+        public Instruction AtomicIDecrement(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics)
         {
-            return EmitOperationWithResulType(Op.OpAtomicIDecrement, ResultType, Pointer, Scope, Semantics);
+            return EmitOperationWithResulType(Op.OpAtomicIDecrement, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId);
         }
 
-        public Instruction AtomicIAdd(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicIAdd(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicIAdd, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicIAdd, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicISub(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicISub(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicISub, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicISub, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicSMin(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicSMin(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicSMin, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicSMin, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicUMin(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicUMin(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicUMin, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicUMin, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicSMax(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicSMax(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicSMax, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicSMax, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicUMax(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicUMax(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicUMax, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicUMax, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicAnd(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicAnd(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicAnd, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicAnd, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicOr(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicOr(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicOr, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicOr, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicXor(uint ResultType, uint Pointer, uint Scope, uint Semantics, uint Value)
+        public Instruction AtomicXor(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics, Instruction Value)
         {
-            return EmitOperationWithResulType(Op.OpAtomicXor, ResultType, Pointer, Scope, Semantics, Value);
+            return EmitOperationWithResulType(Op.OpAtomicXor, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId, Value.ResultTypeId);
         }
 
-        public Instruction AtomicFlagTestAndSet(uint ResultType, uint Pointer, uint Scope, uint Semantics)
+        public Instruction AtomicFlagTestAndSet(Instruction ResultType, Instruction Pointer, Instruction Scope, Instruction Semantics)
         {
-            return EmitOperationWithResulType(Op.OpAtomicFlagTestAndSet, ResultType, Pointer, Scope, Semantics);
+            return EmitOperationWithResulType(Op.OpAtomicFlagTestAndSet, ResultType, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId);
         }
 
-        public Instruction AtomicFlagClear(uint Pointer, uint Scope, uint Semantics)
+        public Instruction AtomicFlagClear(Instruction Pointer, Instruction Scope, Instruction Semantics)
         {
-            return EmitCode(CreateInstruction(Op.OpAtomicFlagClear, Pointer, Scope, Semantics));
+            return EmitCode(CreateInstruction(Op.OpAtomicFlagClear, Pointer.ResultTypeId, Scope.ResultTypeId, Semantics.ResultTypeId));
         }
     }
 }

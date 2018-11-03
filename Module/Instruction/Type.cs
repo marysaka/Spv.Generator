@@ -77,10 +77,10 @@ namespace Spv.Generator
             return AddTypeDeclaration(CreateInstruction(Op.OpTypeMatrix, ComponentType.ResultTypeId, ComponentCount));
         }
 
-        public Instruction TypeImage(uint SampleType, Dim Dim, uint Depth, bool Arrayed, uint MS, uint Sampled, params AccessQualifier[] OptionalAccessQualifiers)
+        public Instruction TypeImage(Instruction SampleType, Dim Dim, uint Depth, bool Arrayed, uint MS, uint Sampled, params AccessQualifier[] OptionalAccessQualifiers)
         {
             // TODO: capabilities & checks
-            Instruction TypeImage = CreateInstruction(Op.OpTypeImage, SampleType, (uint)Dim, Depth, Arrayed ? 1u : 0u, MS, Sampled);
+            Instruction TypeImage = CreateInstruction(Op.OpTypeImage, SampleType.ResultTypeId, (uint)Dim, Depth, Arrayed ? 1u : 0u, MS, Sampled);
             foreach (AccessQualifier AccessQualifier in OptionalAccessQualifiers)
             {
                 TypeImage.PushOperand((uint)AccessQualifier);
@@ -94,29 +94,32 @@ namespace Spv.Generator
             return AddTypeDeclaration(CreateInstruction(Op.OpTypeSampler));
         }
 
-        public Instruction TypeSampledImage(uint ImageType)
+        public Instruction TypeSampledImage(Instruction ImageType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpTypeSampledImage, ImageType));
+            return AddTypeDeclaration(CreateInstruction(Op.OpTypeSampledImage, ImageType.ResultTypeId));
         }
 
-        public Instruction TypeArray(uint ElementType, uint Length)
+        public Instruction TypeArray(Instruction ElementType, Instruction Length)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpTypeArray, ElementType, Length));
+            return AddTypeDeclaration(CreateInstruction(Op.OpTypeArray, ElementType.ResultTypeId, Length.ResultTypeId));
         }
 
-        public Instruction TypeRuntimeArray(uint ElementType)
+        public Instruction TypeRuntimeArray(Instruction ElementType)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpTypeRuntimeArray, ElementType));
+            return AddTypeDeclaration(CreateInstruction(Op.OpTypeRuntimeArray, ElementType.ResultTypeId));
         }
 
-        public Instruction TypeStruct(params uint[] Members)
+        public Instruction TypeStruct(params Instruction[] Members)
         {
             if (Members.Length == 0)
             {
                 // TODO: error/exception
             }
 
-            return AddTypeDeclaration(CreateInstruction(Op.OpTypeStruct, Members));
+            Instruction Result = CreateInstruction(Op.OpTypeStruct);
+            Result.PushOperandResultTypeId(Members);
+
+            return AddTypeDeclaration(Result);
         }
 
         public Instruction TypeOpaque(string OpaqueName)
@@ -127,9 +130,9 @@ namespace Spv.Generator
             return AddTypeDeclaration(TypeOpaque);
         }
 
-        public Instruction TypePointer(StorageClass StorageClass, uint Type)
+        public Instruction TypePointer(StorageClass StorageClass, Instruction Type)
         {
-            return AddTypeDeclaration(CreateInstruction(Op.OpTypePointer, (uint)StorageClass, Type));
+            return AddTypeDeclaration(CreateInstruction(Op.OpTypePointer, (uint)StorageClass, Type.ResultTypeId));
         }
 
         public Instruction TypeFunction(Instruction ReturnType, params Instruction[] Params)
@@ -167,9 +170,9 @@ namespace Spv.Generator
             return AddTypeDeclaration(CreateInstruction(Op.OpTypePipe, (uint)Qualifier));
         }
 
-        public Instruction TypeForwardPointer(uint PointerType, StorageClass StorageClass)
+        public Instruction TypeForwardPointer(Instruction PointerType, StorageClass StorageClass)
         {
-            Instruction TypeForwardPointer = CreateInstruction(Op.OpTypeForwardPointer, PointerType, (uint)StorageClass);
+            Instruction TypeForwardPointer = CreateInstruction(Op.OpTypeForwardPointer, PointerType.ResultTypeId, (uint)StorageClass);
 
             // Manually added because it's forwarded.
             TypesDeclarations.Add(TypeForwardPointer);

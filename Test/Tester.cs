@@ -7,41 +7,25 @@ namespace Spv.Generator.Test
 {
     class Tester
     {
+        public class TestModule : Module
+        {
+            public TestModule() : base(Specification.Version) {}
+
+            protected override void Construct()
+            {
+                SetMemoryModel(AddressingModel.Logical, MemoryModel.GLSL450);
+
+                AddCapability(Capability.Shader);
+
+                AddTypeDeclaration(new Instruction(Op.OpTypeVoid));
+            }
+        }
+
         static void Main(string[] Args)
         {
-            Module ModuleTest = new Module();
-            ModuleTest.AddCapability(Capability.Shader);
-            ModuleTest.SetMemoryModel(AddressingModel.Logical, MemoryModel.GLSL450);
-            ModuleTest.Extension("TestExtension");
-            ModuleTest.ExtInstImport("GLSL.std.450");
-            
-            Instruction TypeVoid       = ModuleTest.TypeVoid();
-            Instruction TypeFloat      = ModuleTest.TypeFloat(32);
-            Instruction TypeInt        = ModuleTest.TypeInt(32, true);
-            Instruction TypePointerInt = ModuleTest.TypePointer(StorageClass.Input, TypeInt);
+            Module module = new TestModule();
 
-
-            Instruction MainFunctionType = ModuleTest.TypeFunction(TypeVoid);
-            Instruction MainFunction     = ModuleTest.CreateFunction(TypeVoid, FunctionControlMask.MaskNone, MainFunctionType);
-
-            Instruction SecondaryFunctionType = ModuleTest.TypeFunction(TypeVoid);
-            Instruction SecondaryFunction     = ModuleTest.CreateFunction(TypeVoid, FunctionControlMask.MaskNone, SecondaryFunctionType);
-
-            ModuleTest.EmitCode(MainFunction);
-            ModuleTest.Label();
-            ModuleTest.FunctionCall(TypeVoid, SecondaryFunction);
-            ModuleTest.Return();
-            ModuleTest.FunctionEnd();
-
-            ModuleTest.EmitCode(SecondaryFunction);
-            ModuleTest.Label();
-            ModuleTest.Return();
-            ModuleTest.FunctionEnd();
-
-            ModuleTest.AddEntryPoint(ExecutionModel.Fragment, MainFunction, "main");
-            ModuleTest.AddExecutionMode(MainFunction, ExecutionMode.OriginLowerLeft);
-
-            byte[] ModuleData = ModuleTest.Create();
+            byte[] ModuleData = module.Generate();
 
             File.WriteAllBytes(Args[0], ModuleData);
 

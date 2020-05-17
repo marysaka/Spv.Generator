@@ -1,210 +1,157 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
-
-using static Spv.Specification;
+using System.Linq;
 
 namespace Spv.Generator
 {
-    public class Instruction : IEquatable<Instruction>
+    public sealed class Instruction : Operand, IEquatable<Instruction>
     {
-        public Op OpCode { get; private set; }
+        public const uint InvalidId = uint.MaxValue;
 
-        public List<uint> Words { get; private set; }
+        public Specification.Op Opcode { get; private set; }
+        private Instruction _resultType;
+        private List<Operand> _operands;
 
-        // Optional
-        public bool HasTypeId { get; private set; }
-        public bool HasResultTypeId { get; private set; }
-        public uint TypeId { get; private set; }
-        public uint ResultTypeId { get; private set; }
+        public uint Id { get; set; }
 
-
-        public Instruction(Op OpCode, List<uint> Words = null)
+        public Instruction(Specification.Op opcode, uint id = InvalidId, Instruction resultType = null)
         {
-            this.OpCode = OpCode;
-            this.Words = Words;
-            if (this.Words == null)
-                this.Words = new List<uint>();
+            Opcode = opcode;
+            Id = id;
+            _resultType = resultType;
+
+            _operands = new List<Operand>();
         }
 
-        public void PushOperand(uint Operand)
+        public void SetId(uint id)
         {
-            Words.Add(Operand);
+            Id = id;
         }
 
-        public void PushOperand(int Operand)
-        {
-            PushOperand((uint)Operand);
-        }
+        public OperandType Type => OperandType.Instruction;
 
-        public void PushOperandTypeId(Instruction Operand)
+        public ushort GetTotalWordCount()
         {
-            // TODO: error out if it doesn't have a type id.
-            Words.Add(Operand.TypeId);
-        }
+            ushort result = WordCount;
 
-        public void PushOperandResultTypeId(Instruction Operand)
-        {
-            Words.Add(Operand.ResultTypeId);
-        }
-
-        public void PushOperandTypeId(Instruction[] Operands)
-        {
-            foreach (Instruction Operand in Operands)
+            if (Id != InvalidId)
             {
-                PushOperandTypeId(Operand);
+                result++;
+            }
+
+            if (_resultType != null)
+            {
+                result += _resultType.WordCount;
+            }
+
+            foreach (Operand operand in _operands)
+            {
+                result += operand.WordCount;
+            }
+
+            return result;
+        }
+
+        public ushort WordCount => 1;
+
+        private void AddOperand(Operand value)
+        {
+            _operands.Add(value);
+        }
+
+        public void AddOperand(Instruction value)
+        {
+            AddOperand(value);
+        }
+
+        public void AddOperand(string value)
+        {
+            AddOperand(new LiteralString(value));
+        }
+
+        public void AddOperand<T>(T value) where T: struct
+        {
+            if (!typeof(T).IsPrimitive && !typeof(T).IsEnum)
+            {
+                throw new InvalidOperationException();
+            }
+
+            AddOperand(LiteralInteger.Create(value));
+        }
+
+        public void Write(Stream stream)
+        {
+            BinaryWriter writer = new BinaryWriter(stream);
+
+            // Word 0
+            writer.Write((ushort)Opcode);
+            writer.Write(GetTotalWordCount());
+
+            _resultType?.WriteOperand(stream);
+
+            if (Id != InvalidId)
+            {
+                writer.Write(Id);
+            }
+
+            foreach (Operand operand in _operands)
+            {
+                operand.WriteOperand(stream);
             }
         }
 
-        public void PushOperandResultTypeId(Instruction[] Operands)
+        public void WriteOperand(Stream stream)
         {
-            foreach (Instruction Operand in Operands)
+            Debug.Assert(Id != InvalidId);
+
+            if (Id == InvalidId)
             {
-                PushOperandResultTypeId(Operand);
-            }
-        }
+                string methodToCall;
 
-        public void PushOperand(uint[] Operands)
-        {
-            Words.AddRange(Operands);
-        }
-
-        public void PushOperand(string Operand)
-        {
-            int OperandSize = Operand.Length;
-
-            if (OperandSize == 0)
-            {
-                OperandSize = 4;
-            }
-
-            for (int i = 0; i < 4 - (OperandSize % 4); i++)
-            {
-                Operand += '\0';
-            }
-
-            byte[] RawOperand = Encoding.ASCII.GetBytes(Operand);
-            uint[] Encoded = new uint[RawOperand.Length / 4];
-
-            Buffer.BlockCopy(RawOperand, 0, Encoded, 0, RawOperand.Length);
-            PushOperand(Encoded);
-        }
-
-        public Instruction SetTypeId(uint TypeId)
-        {
-            this.HasTypeId = true;
-            this.TypeId = TypeId;
-            return this;
-        }
-
-        public Instruction SetTypeId(Instruction Type)
-        {
-            return SetTypeId(Type.ResultTypeId);
-        }
-
-        public Instruction SetResultTypeId(Instruction ReturnType)
-        {
-            return SetResultTypeId(ReturnType.ResultTypeId);
-        }
-
-        public Instruction SetResultTypeId(uint ResultTypeId)
-        {
-            this.HasResultTypeId = true;
-            this.ResultTypeId = ResultTypeId;
-            return this;
-        }
-
-        public void Encode(BinaryWriter Writer)
-        {
-            ushort WordCount = (ushort)Words.Count;
-
-            WordCount++;
-
-            if (HasTypeId)
-                WordCount++;
-
-            if (HasResultTypeId)
-                WordCount++;
-
-            // Opcode
-            Writer.Write((ushort)OpCode);
-            Writer.Write(WordCount);
-
-            if (HasTypeId)
-                Writer.Write(TypeId);
-
-            if (HasResultTypeId)
-                Writer.Write(ResultTypeId);
-
-            // Words
-            foreach (uint Word in Words)
-            {
-                Writer.Write(Word);
-            }
-
-        }
-
-        public bool IsType()
-        {
-            return OpCode == Op.OpTypeVoid || OpCode == Op.OpTypeBool || OpCode == Op.OpTypeInt
-                || OpCode == Op.OpTypeFloat || OpCode == Op.OpTypeVector || OpCode == Op.OpTypeMatrix
-                || OpCode == Op.OpTypeImage || OpCode == Op.OpTypeSampler || OpCode == Op.OpTypeSampledImage
-                || OpCode == Op.OpTypeArray || OpCode == Op.OpTypeRuntimeArray || OpCode == Op.OpTypeStruct
-                || OpCode == Op.OpTypeOpaque || OpCode == Op.OpTypePointer || OpCode == Op.OpTypeFunction
-                || OpCode == Op.OpTypeEvent || OpCode == Op.OpTypeDeviceEvent || OpCode == Op.OpTypeReserveId
-                || OpCode == Op.OpTypeQueue || OpCode == Op.OpTypePipe || OpCode == Op.OpTypeForwardPointer
-                || OpCode == Op.OpTypePipeStorage || OpCode == Op.OpTypeNamedBarrier
-                || OpCode == Op.OpTypeAccelerationStructureNVX;
-        }
-
-        public bool IsGlobalVariable()
-        {
-            return OpCode == Op.OpVariable && Words.Count >= 1 && (StorageClass)Words[0] != StorageClass.Function;
-        }
-
-        public bool IsConstant()
-        {
-            return OpCode == Op.OpConstant || OpCode == Op.OpSpecConstantTrue
-                || OpCode == Op.OpSpecConstantFalse || OpCode == Op.OpSpecConstant
-                || OpCode == Op.OpSpecConstantComposite || OpCode == Op.OpSpecConstantOp;
-        }
-
-        public bool IsTypeDeclaration()
-        {
-            return IsType() || IsConstant() || IsGlobalVariable();
-        }
-
-        public override bool Equals(object Other)
-        {
-            if (Other == null || this.GetType() != Other.GetType())
-            {
-                return false;
-            }
-            return Equals((Instruction)Other);
-        }
-
-        public bool Equals(Instruction Other)
-        {
-            bool Result = OpCode == Other.OpCode
-                && Words.Count == Other.Words.Count;
-
-            if (Result)
-            {
-                for (int i = 0; i < Words.Count; i++)
+                if (Opcode == Specification.Op.OpVariable)
                 {
-                    if (Words[i] != Other.Words[i])
-                    {
-                        return false;
-                    }
+                    methodToCall = "AddLocalVariable or AddGlobalVariable";
                 }
+                else if (Opcode == Specification.Op.OpLabel)
+                {
+                    methodToCall = "AddLabel";
+                }
+                else
+                {
+                    throw new InvalidOperationException("Internal error");
+                }
+
+                throw new InvalidOperationException($"Id wasn't bound to the module, please make sure to call {methodToCall}");
             }
-            return Result;
+
+            stream.Write(BitConverter.GetBytes(Id));
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Instruction instruction && Equals(instruction);
+        }
+
+        public bool Equals(Instruction cmpObj)
+        {
+            return Type == cmpObj.Type && Id == cmpObj.Id && _resultType == cmpObj._resultType && EqualsContent(cmpObj);
+        }
+
+        public bool EqualsContent(Instruction cmpObj)
+        {
+            return _operands.SequenceEqual(cmpObj._operands);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(OpCode, Words, HasTypeId, HasResultTypeId, TypeId, ResultTypeId);
+            return HashCode.Combine(Opcode, Id, _resultType, _operands);
+        }
+
+        public bool Equals(Operand obj)
+        {
+            return obj is Instruction instruction && Equals(instruction);
         }
     }
 }

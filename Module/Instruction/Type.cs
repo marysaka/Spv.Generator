@@ -77,10 +77,10 @@ namespace Spv.Generator
             return AddTypeDeclaration(CreateInstruction(Op.OpTypeMatrix, ComponentType.ResultTypeId, ComponentCount));
         }
 
-        public Instruction TypeImage(Instruction SampleType, Dim Dim, uint Depth, bool Arrayed, uint MS, uint Sampled, params AccessQualifier[] OptionalAccessQualifiers)
+        public Instruction TypeImage(Instruction SampleType, Dim Dim, uint Depth, bool Arrayed, uint MS, uint Sampled, ImageFormat ImageFormat, params AccessQualifier[] OptionalAccessQualifiers)
         {
             // TODO: capabilities & checks
-            Instruction TypeImage = CreateInstruction(Op.OpTypeImage, SampleType.ResultTypeId, (uint)Dim, Depth, Arrayed ? 1u : 0u, MS, Sampled);
+            Instruction TypeImage = CreateInstruction(Op.OpTypeImage, SampleType.ResultTypeId, (uint)Dim, Depth, Arrayed ? 1u : 0u, MS, Sampled, (uint)ImageFormat);
             foreach (AccessQualifier AccessQualifier in OptionalAccessQualifiers)
             {
                 TypeImage.PushOperand((uint)AccessQualifier);

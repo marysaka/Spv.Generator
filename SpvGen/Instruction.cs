@@ -61,14 +61,38 @@ namespace Spv.Generator
             _operands.Add(value);
         }
 
+        public void AddOperand(Operand[] value)
+        {
+            foreach (Operand instruction in value)
+            {
+                AddOperand(instruction);
+            }
+        }
+
+        public void AddOperand(LiteralInteger[] value)
+        {
+            foreach (LiteralInteger instruction in value)
+            {
+                AddOperand(instruction);
+            }
+        }
+
         public void AddOperand(LiteralInteger value)
         {
-            AddOperand(value);
+            AddOperand((Operand)value);
+        }
+
+        public void AddOperand(Instruction[] value)
+        {
+            foreach (Instruction instruction in value)
+            {
+                AddOperand(instruction);
+            }
         }
 
         public void AddOperand(Instruction value)
         {
-            AddOperand(value);
+            AddOperand((Operand)value);
         }
 
         public void AddOperand(string value)

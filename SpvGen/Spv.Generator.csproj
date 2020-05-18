@@ -2,8 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <StartupObject>Spv.Generator.Test.Tester</StartupObject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SPIRV-Headers\include\spirv\unified1\spirv.cs" />
+  </ItemGroup>
 
 </Project>

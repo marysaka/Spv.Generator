@@ -70,7 +70,28 @@ namespace Spv.Generator
             _extensions.Add(extension);
         }
 
-        protected void AddTypeDeclaration(Instruction instruction)
+        protected Instruction AddExtInstImport(string import)
+        {
+            Instruction instruction = new Instruction(Op.OpExtInstImport);
+            instruction.AddOperand(import);
+
+            foreach (Instruction extInstImport in _extInstImports)
+            {
+                if (extInstImport.Opcode == Op.OpExtInstImport && extInstImport.EqualsContent(instruction))
+                {
+                    // update the duplicate instance to use the good id so it ends up being encoded right.
+                    return extInstImport;
+                }
+            }
+
+            instruction.SetId(GetNewId());
+
+            _extInstImports.Add(instruction);
+
+            return instruction;
+        }
+
+        private void AddTypeDeclaration(Instruction instruction)
         {
             foreach (Instruction typeDeclaration in _typeDeclarations)
             {
@@ -97,11 +118,22 @@ namespace Spv.Generator
             entryPoint.AddOperand(executionModel);
             entryPoint.AddOperand(function);
             entryPoint.AddOperand(name);
+            entryPoint.AddOperand(interfaces);
 
-            foreach (Instruction interfaceInstruction in interfaces)
-            {
-                entryPoint.AddOperand(interfaceInstruction);
-            }
+            _entrypoints.Add(entryPoint);
+        }
+
+        protected void AddExecutionMode(Instruction function, ExecutionMode mode, params Operand[] parameters)
+        {
+            Debug.Assert(function.Opcode == Op.OpFunction);
+
+            Instruction executionModeInstruction = new Instruction(Op.OpExecutionMode);
+
+            executionModeInstruction.AddOperand(function);
+            executionModeInstruction.AddOperand(mode);
+            executionModeInstruction.AddOperand(parameters);
+
+            _executionModes.Add(executionModeInstruction);
         }
 
         private void AddToFunctionDefinitions(Instruction instruction)
@@ -109,7 +141,7 @@ namespace Spv.Generator
             _functionsDefinitions.Add(instruction);
         }
 
-        private void AddLabel(Instruction label)
+        protected void AddLabel(Instruction label)
         {
             Debug.Assert(label.Opcode == Op.OpLabel);
 
@@ -118,7 +150,7 @@ namespace Spv.Generator
             AddToFunctionDefinitions(label);
         }
 
-        private void AddLocalVariable(Instruction variable)
+        protected void AddLocalVariable(Instruction variable)
         {
             // TODO: ensure it has the local modifier
             Debug.Assert(variable.Opcode == Op.OpVariable);
@@ -128,7 +160,7 @@ namespace Spv.Generator
             AddToFunctionDefinitions(variable);
         }
 
-        public void AddGlobalVariable(Instruction variable)
+        protected void AddGlobalVariable(Instruction variable)
         {
             // TODO: ensure it has the global modifier
             // TODO: all constants opcodes (OpSpecXXX and the rest of the OpConstantXXX)

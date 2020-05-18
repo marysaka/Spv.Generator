@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spv.Generator", "Spv.Generator.csproj", "{5C528C34-D206-400B-9329-64C9D8109E4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spv.Generator", "SpvGen\Spv.Generator.csproj", "{5C528C34-D206-400B-9329-64C9D8109E4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

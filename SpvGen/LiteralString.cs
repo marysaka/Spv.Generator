@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Spv.Generator
@@ -51,7 +50,7 @@ namespace Spv.Generator
 
         public bool Equals(Operand obj)
         {
-            return obj is Instruction instruction && Equals(instruction);
+            return obj is LiteralString literalString && Equals(literalString);
         }
     }
 }

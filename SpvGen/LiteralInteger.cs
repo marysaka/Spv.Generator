@@ -16,6 +16,16 @@ namespace Spv.Generator
             _data = data;
         }
 
+        public static implicit operator LiteralInteger(int value) => Create(value);
+        public static implicit operator LiteralInteger(uint value) => Create(value);
+        public static implicit operator LiteralInteger(long value) => Create(value);
+        public static implicit operator LiteralInteger(ulong value) => Create(value);
+        public static implicit operator LiteralInteger(float value) => Create(value);
+        public static implicit operator LiteralInteger(double value) => Create(value);
+
+        // NOTE: this is not in the standard, but this is some syntax sugar useful in some instructions (TypeInt ect)
+        public static implicit operator LiteralInteger(bool value) => Create(Convert.ToInt32(value));
+
         public static LiteralInteger Create<T>(T value) where T: struct
         {
             return new LiteralInteger(MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)).ToArray());

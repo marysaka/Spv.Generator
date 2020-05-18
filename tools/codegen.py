@@ -26,21 +26,61 @@ class CodeStream:
         self.begin_line()
         self.write(line + "\n")
 
+class MethodArgument:
+    def __init__(self, name, real_type, c_sharp_type, optional, variable):
+        self.name = name
+        self.real_type = real_type
+        self.c_sharp_type = c_sharp_type
+        self.optional = optional
+        self.variable = variable
+    
+    def get_prototype_name(self):
+        if self.optional:
+            return '{0} {1} = {2}'.format(self.c_sharp_type, self.name, self.get_default_value())
+        if self.variable:
+            return 'params {0}[] {1}'.format(self.c_sharp_type, self.name)
+        return '{0} {1}'.format(self.c_sharp_type, self.name)
+
+    def get_default_value(self):
+        if self.optional:
+            default_value = 'null'
+
+            # Assume enum if it's not an Instruction,
+            # We use some invalid value in this case to detect that the user hasn't send anything
+            # TODO: improve this
+            if self.c_sharp_type != 'Instruction':
+                default_value = '({0})int.MaxValue'.format(self.c_sharp_type)
+            
+            return default_value
+        
+        return None
+
+    def generate_add_operant_operation(self, stream):
+        # skip result type as it's send in the constructor
+        if self.name == 'resultType':
+            return
+        if self.optional:
+            stream.write_line("if ({0} != {1})".format(self.name, self.get_default_value()))
+            stream.write_line("{")
+            stream.indent()
+        stream.write_line('result.AddOperand({0});'.format(self.name))
+        if self.optional:
+            stream.unindent()
+            stream.write_line("}")
+
 class MethodInfo:
     def fix_possible_argument_conflicts(self, name):
         conflict_count = -1
         
-        for (argument_name, argument_type) in self.arguments:
-            if argument_name == name:
+        for argument in self.arguments:
+            if argument.name == name:
                 conflict_count += 1
         
         if conflict_count > 0:
             index = 0
-            for i in range(len(self.arguments)):
-                (argument_name, argument_type) = self.arguments[i]
-
-                if (argument_name == name):
-                    self.arguments[i] = ('{0}{1}'.format(argument_name, index), argument_type)
+            for argument in self.arguments:
+                if argument.name == name:
+                    argument.name = '{0}{1}'.format(argument.name, index)
                     index += 1
 
     def __init__(self, instruction):
@@ -53,17 +93,26 @@ class MethodInfo:
         i = 0
 
         if 'operands' in instruction:
-            for data in instruction['operands']:
-                if data['kind'] != 'IdResult':
-                    if data['kind'] == 'IdResultType':
+            for operand in instruction['operands']:
+                if operand['kind'] != 'IdResult':
+                    if operand['kind'] == 'IdResultType':
                         self.result_type_index = i
-                    self.arguments.append((get_argument_name(data, i), get_type_by_operand(data)))
+
+                    variable =  'quantifier' in operand and operand['quantifier'] == '*'
+                    optional =  'quantifier' in operand and operand['quantifier'] == '?'
+                    self.arguments.append(MethodArgument(get_argument_name(operand, i), operand['kind'], get_type_by_operand(operand), optional, variable))
+                    
+                    
+                    # Decoration and ExecutionMode are special as they carry variable operands
+                    if operand['kind'] in ['Decoration', 'ExecutionMode']:
+                        self.arguments.append(MethodArgument('parameters', 'Operands', 'Operand', False, True))
+
                     i += 1
                 else:
                     self.bound_increment_needed = True
         
-        for (argument_name, _) in self.arguments:
-            self.fix_possible_argument_conflicts(argument_name)
+        for argument in self.arguments:
+            self.fix_possible_argument_conflicts(argument.name)
 
 
 def get_instructions_by_class(spec_data, cl):
@@ -116,7 +165,8 @@ def get_argument_name(operand, position):
         'ImageOperands',
         'LoopControl',
         'SelectionControl',
-        'MemoryAccess'
+        'MemoryAccess',
+        'Decoration'
     ]
 
     if operand['kind'] in namemapping:
@@ -148,7 +198,8 @@ def get_type_by_operand(operand):
         'PairIdRefIdRef': 'Instruction',
         'LiteralContextDependentNumber': 'LiteralInteger',
         'LiteralSpecConstantOpInteger': 'LiteralInteger',
-        'PairLiteralIntegerIdRef': 'Operand'
+        'PairLiteralIntegerIdRef': 'Operand',
+        'PairIdRefLiteralInteger': 'Operand'
     }
 
     kind = operand['kind']
@@ -160,8 +211,8 @@ def get_type_by_operand(operand):
     if kind in enum_masks:
         result = kind + 'Mask'
 
-    if 'quantifier' in operand and operand['quantifier'] == '*':
-        result = 'params {0}[]'.format(result)
+    #if 'quantifier' in operand and operand['quantifier'] == '*':
+    #    result = 'params {0}[]'.format(result)
 
 
     return result
@@ -180,8 +231,8 @@ def generate_method_definition(stream, method_info):
 
     if method_info.bound_increment_needed:
         if method_info.result_type_index != -1:
-            (argument_name, _) = method_info.arguments[method_info.result_type_index]
-            stream.write_line('Instruction result = new Instruction(Op.Op{0}, GetNewId(), {1});'.format(method_info.name, argument_name))
+            argument = method_info.arguments[method_info.result_type_index]
+            stream.write_line('Instruction result = new Instruction(Op.Op{0}, GetNewId(), {1});'.format(method_info.name, argument.name))
         else:
             # Optimization: here we explictly don't set the id because it will be set in AddTypeDeclaration/AddLabel.
             # In the end this permit to not reserve id that will be discared.
@@ -196,14 +247,14 @@ def generate_method_definition(stream, method_info):
 
     stream.write_line()
 
-    for (argument_name, _) in method_info.arguments:
-        # skip result type as it's send in the constructor
-        if argument_name == 'resultType':
-            continue
-        stream.write_line('result.AddOperand({0});'.format(argument_name))
+    for argument in method_info.arguments:
+        argument.generate_add_operant_operation(stream)
 
     if method_info.cl == 'Type-Declaration':
         stream.write_line('AddTypeDeclaration(result);')
+        stream.write_line()
+    elif method_info.cl == 'Annotation':
+        stream.write_line('AddAnnotation(result);')
         stream.write_line()
     elif method_info.cl == 'Constant-Creation' and method_info.name.startswith('Constant'):
         stream.write_line('AddGlobalVariable(result);')
@@ -226,8 +277,8 @@ def generate_method_prototye(stream, method_info):
 
     i = 0
 
-    for (argument_name, argument_type) in method_info.arguments:
-        arguments.append('{0} {1}'.format(argument_type, argument_name))
+    for argument in method_info.arguments:
+        arguments.append(argument.get_prototype_name())
         i += 1
 
     stream.write(', '.join(arguments))
@@ -276,6 +327,7 @@ def main():
 
 
     generate_methods_by_class(stream, spec_data, 'Miscellaneous')
+    generate_methods_by_class(stream, spec_data, 'Annotation')
     generate_methods_by_class(stream, spec_data, 'Type-Declaration')
     generate_methods_by_class(stream, spec_data, 'Constant-Creation')
     generate_methods_by_class(stream, spec_data, 'Memory')

@@ -22,6 +22,7 @@ namespace Spv.Generator
         public static implicit operator LiteralInteger(ulong value) => Create(value);
         public static implicit operator LiteralInteger(float value) => Create(value);
         public static implicit operator LiteralInteger(double value) => Create(value);
+        public static implicit operator LiteralInteger(Enum value) => Create((int)Convert.ChangeType(value, typeof(int)));
 
         // NOTE: this is not in the standard, but this is some syntax sugar useful in some instructions (TypeInt ect)
         public static implicit operator LiteralInteger(bool value) => Create(Convert.ToInt32(value));

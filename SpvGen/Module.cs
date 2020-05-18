@@ -138,7 +138,13 @@ namespace Spv.Generator
 
         private void AddToFunctionDefinitions(Instruction instruction)
         {
+            Debug.Assert(instruction.Opcode != Op.OpTypeInt);
             _functionsDefinitions.Add(instruction);
+        }
+
+        private void AddAnnotation(Instruction annotation)
+        {
+            _annotations.Add(annotation);
         }
 
         protected void AddLabel(Instruction label)
@@ -149,6 +155,7 @@ namespace Spv.Generator
 
             AddToFunctionDefinitions(label);
         }
+
 
         protected void AddLocalVariable(Instruction variable)
         {
@@ -168,7 +175,8 @@ namespace Spv.Generator
                          variable.Opcode == Op.OpConstant ||
                          variable.Opcode == Op.OpConstantFalse ||
                          variable.Opcode == Op.OpConstantTrue ||
-                         variable.Opcode == Op.OpConstantNull
+                         variable.Opcode == Op.OpConstantNull ||
+                         variable.Opcode == Op.OpConstantComposite
                          );
 
             variable.SetId(GetNewId());
@@ -257,16 +265,16 @@ namespace Spv.Generator
                     annotation.Write(stream);
                 }
 
-                // 9. types only
-                foreach (Instruction declaration in _typeDeclarations)
+                // Ensure that everything is in the right order in the declarations section
+                List<Instruction> declarations = new List<Instruction>();
+                declarations.AddRange(_typeDeclarations);
+                declarations.AddRange(_globals);
+                declarations.Sort((Instruction x, Instruction y) => x.Id.CompareTo(y.Id));
+
+                // 9.
+                foreach (Instruction declaration in declarations)
                 {
                     declaration.Write(stream);
-                }
-
-                // 9. constants and global variables only
-                foreach (Instruction global in _globals)
-                {
-                    global.Write(stream);
                 }
 
                 // 10.

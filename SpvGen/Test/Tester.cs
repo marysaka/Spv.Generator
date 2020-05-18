@@ -13,32 +13,32 @@ namespace Spv.Generator.Test
 
             protected override void Construct()
             {
-                SetMemoryModel(AddressingModel.Logical, MemoryModel.GLSL450);
-
                 AddCapability(Capability.Shader);
-                AddExtension("SomeExtension");
+                SetMemoryModel(AddressingModel.Logical, MemoryModel.Simple);
 
-                Instruction extImport = AddExtInstImport("GLSL.std.450");
+                Instruction floatType = TypeFloat(32);
+                Instruction vec4Type = TypeVector(floatType, 4);
+                Instruction vec4OutputPtrType = TypePointer(StorageClass.Output, vec4Type);
+                Instruction outputColor = Variable(vec4OutputPtrType, StorageClass.Output);
+                AddGlobalVariable(outputColor);
 
-                Instruction typeVoid = TypeVoid();
-                Instruction typeFloat = TypeFloat(32);
-                Instruction typeInt = TypeInt(32, true);
-                Instruction typePointer = TypePointer(StorageClass.Input, typeInt);
-                Instruction mainFunctionType = TypeFunction(typeVoid);
-                Instruction secondaryFunctionType = TypeFunction(typeVoid); // Will end up using the same Id as mainFunctionType as it's duplicated.
+                Instruction rColor = Constant(floatType, 0.5f);
+                Instruction gColor = Constant(floatType, 0.0f);
+                Instruction bColor = Constant(floatType, 0.0f);
+                Instruction aColor = Constant(floatType, 1.0f);
 
-                Instruction secondaryFunction = Function(typeVoid, FunctionControlMask.MaskNone, secondaryFunctionType);
+                Instruction compositeColor = ConstantComposite(vec4Type, rColor, gColor, bColor, aColor);
+
+                Instruction voidType = TypeVoid();
+
+                Instruction mainFunctionType = TypeFunction(voidType);
+                Instruction mainFunction = Function(voidType, FunctionControlMask.MaskNone, mainFunctionType);
                 AddLabel(Label());
+                Store(outputColor, compositeColor);
                 Return();
                 FunctionEnd();
 
-                Instruction mainFunction = Function(typeVoid, FunctionControlMask.MaskNone, mainFunctionType);
-                AddLabel(Label());
-                FunctionCall(typeVoid, secondaryFunction);
-                Return();
-                FunctionEnd();
-
-                AddEntryPoint(ExecutionModel.Fragment, mainFunction, "main");
+                AddEntryPoint(ExecutionModel.Fragment, mainFunction, "main", outputColor);
                 AddExecutionMode(mainFunction, ExecutionMode.OriginLowerLeft);
             }
         }

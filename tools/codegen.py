@@ -282,6 +282,7 @@ def main():
     generate_methods_by_class(stream, spec_data, 'Function')
     generate_methods_by_class(stream, spec_data, 'Image')
     generate_methods_by_class(stream, spec_data, 'Conversion')
+    generate_methods_by_class(stream, spec_data, 'Composite')
     generate_methods_by_class(stream, spec_data, 'Arithmetic')
     generate_methods_by_class(stream, spec_data, 'Bit')
     generate_methods_by_class(stream, spec_data, 'Relational_and_Logical')

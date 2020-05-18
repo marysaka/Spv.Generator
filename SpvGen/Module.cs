@@ -147,6 +147,11 @@ namespace Spv.Generator
             _annotations.Add(annotation);
         }
 
+        private void AddDebug(Instruction debug)
+        {
+            _debug.Add(debug);
+        }
+
         protected void AddLabel(Instruction label)
         {
             Debug.Assert(label.Opcode == Op.OpLabel);

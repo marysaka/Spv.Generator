@@ -20,6 +20,8 @@ namespace Spv.Generator.Test
                 Instruction vec4Type = TypeVector(floatType, 4);
                 Instruction vec4OutputPtrType = TypePointer(StorageClass.Output, vec4Type);
                 Instruction outputColor = Variable(vec4OutputPtrType, StorageClass.Output);
+
+                Name(outputColor, "outputColor");
                 AddGlobalVariable(outputColor);
 
                 Instruction rColor = Constant(floatType, 0.5f);

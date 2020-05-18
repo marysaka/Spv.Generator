@@ -23,12 +23,7 @@ namespace Spv.Generator
 
             stream.Write(rawValue);
 
-            int paddingSize = rawValue.Length % 4;
-
-            if (paddingSize == 0)
-            {
-                paddingSize = 4;
-            }
+            int paddingSize = 4 - (rawValue.Length % 4);
 
             stream.Write(new byte[paddingSize]);
         }

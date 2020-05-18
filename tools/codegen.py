@@ -48,7 +48,7 @@ class MethodArgument:
             # Assume enum if it's not an Instruction,
             # We use some invalid value in this case to detect that the user hasn't send anything
             # TODO: improve this
-            if self.c_sharp_type != 'Instruction':
+            if self.c_sharp_type != 'Instruction' and self.c_sharp_type != 'string':
                 default_value = '({0})int.MaxValue'.format(self.c_sharp_type)
             
             return default_value
@@ -143,6 +143,8 @@ def get_argument_name(operand, position):
         # replace reserved words
         if name == 'object':
             return 'obj'
+        if name == 'string':
+            return 'str'
         elif name == 'base':
             return 'baseObj'
         elif name == 'default':
@@ -166,7 +168,8 @@ def get_argument_name(operand, position):
         'LoopControl',
         'SelectionControl',
         'MemoryAccess',
-        'Decoration'
+        'Decoration',
+        'SourceLanguage'
     ]
 
     if operand['kind'] in namemapping:
@@ -253,6 +256,9 @@ def generate_method_definition(stream, method_info):
     if method_info.cl == 'Type-Declaration':
         stream.write_line('AddTypeDeclaration(result);')
         stream.write_line()
+    elif method_info.cl == 'Debug':
+        stream.write_line('AddDebug(result);')
+        stream.write_line()        
     elif method_info.cl == 'Annotation':
         stream.write_line('AddAnnotation(result);')
         stream.write_line()
@@ -327,6 +333,7 @@ def main():
 
 
     generate_methods_by_class(stream, spec_data, 'Miscellaneous')
+    generate_methods_by_class(stream, spec_data, 'Debug')
     generate_methods_by_class(stream, spec_data, 'Annotation')
     generate_methods_by_class(stream, spec_data, 'Type-Declaration')
     generate_methods_by_class(stream, spec_data, 'Constant-Creation')

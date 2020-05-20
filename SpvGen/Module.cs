@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using static Spv.Specification;
 
 namespace Spv.Generator
@@ -91,16 +92,19 @@ namespace Spv.Generator
             return instruction;
         }
 
-        private void AddTypeDeclaration(Instruction instruction)
+        private void AddTypeDeclaration(Instruction instruction, bool forceIdAllocation)
         {
-            foreach (Instruction typeDeclaration in _typeDeclarations)
+            if (!forceIdAllocation)
             {
-                if (typeDeclaration.Opcode == instruction.Opcode && typeDeclaration.EqualsContent(instruction))
+                foreach (Instruction typeDeclaration in _typeDeclarations)
                 {
-                    // update the duplicate instance to use the good id so it ends up being encoded right.
-                    instruction.SetId(typeDeclaration.Id);
+                    if (typeDeclaration.Opcode == instruction.Opcode && typeDeclaration.EqualsContent(instruction))
+                    {
+                        // update the duplicate instance to use the good id so it ends up being encoded right.
+                        instruction.SetId(typeDeclaration.Id);
 
-                    return;
+                        return;
+                    }
                 }
             }
 
@@ -176,17 +180,35 @@ namespace Spv.Generator
         {
             // TODO: ensure it has the global modifier
             // TODO: all constants opcodes (OpSpecXXX and the rest of the OpConstantXXX)
-            Debug.Assert(variable.Opcode == Op.OpVariable ||
-                         variable.Opcode == Op.OpConstant ||
-                         variable.Opcode == Op.OpConstantFalse ||
-                         variable.Opcode == Op.OpConstantTrue ||
-                         variable.Opcode == Op.OpConstantNull ||
-                         variable.Opcode == Op.OpConstantComposite
-                         );
+            Debug.Assert(variable.Opcode == Op.OpVariable);
 
             variable.SetId(GetNewId());
 
             _globals.Add(variable);
+        }
+
+        private void AddConstant(Instruction constant)
+        {
+            Debug.Assert(constant.Opcode == Op.OpConstant ||
+                         constant.Opcode == Op.OpConstantFalse ||
+                         constant.Opcode == Op.OpConstantTrue ||
+                         constant.Opcode == Op.OpConstantNull ||
+                         constant.Opcode == Op.OpConstantComposite);
+
+            foreach (Instruction global in _globals)
+            {
+                if (global.Opcode == constant.Opcode && global.EqualsContent(constant))
+                {
+                    // update the duplicate instance to use the good id so it ends up being encoded right.
+                    constant.SetId(global.Id);
+
+                    return;
+                }
+            }
+
+            constant.SetId(GetNewId());
+
+            _globals.Add(constant);
         }
 
         protected void SetMemoryModel(AddressingModel addressingModel, MemoryModel memoryModel)

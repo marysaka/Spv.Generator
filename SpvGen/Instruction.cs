@@ -12,7 +12,7 @@ namespace Spv.Generator
 
         public Specification.Op Opcode { get; private set; }
         private Instruction _resultType;
-        private List<Operand> _operands;
+        public List<Operand> _operands;
 
         public uint Id { get; set; }
 
@@ -58,6 +58,7 @@ namespace Spv.Generator
 
         private void AddOperand(Operand value)
         {
+            Debug.Assert(value != null);
             _operands.Add(value);
         }
 
@@ -107,7 +108,7 @@ namespace Spv.Generator
                 throw new InvalidOperationException();
             }
 
-            AddOperand(LiteralInteger.Create(value));
+            AddOperand(LiteralInteger.CreateForEnum(value));
         }
 
         public void Write(Stream stream)
@@ -165,7 +166,26 @@ namespace Spv.Generator
 
         public bool Equals(Instruction cmpObj)
         {
-            return Type == cmpObj.Type && Id == cmpObj.Id && _resultType == cmpObj._resultType && EqualsContent(cmpObj);
+            bool result = Type == cmpObj.Type && Id == cmpObj.Id;
+
+            if (result)
+            {
+                if (_resultType != null && cmpObj._resultType != null)
+                {
+                    result &= _resultType.Equals(cmpObj._resultType);
+                }
+                else if (_resultType != null || cmpObj._resultType != null)
+                {
+                    return false;
+                }
+            }
+
+            if (result)
+            {
+                result &= EqualsContent(cmpObj);
+            }
+
+            return result;
         }
 
         public bool EqualsContent(Instruction cmpObj)

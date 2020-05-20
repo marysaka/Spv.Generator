@@ -45,10 +45,13 @@ class MethodArgument:
         if self.optional:
             default_value = 'null'
 
+
+            if self.c_sharp_type == 'bool':
+                default_value = 'false'
             # Assume enum if it's not an Instruction,
             # We use some invalid value in this case to detect that the user hasn't send anything
             # TODO: improve this
-            if self.c_sharp_type != 'Instruction' and self.c_sharp_type != 'string':
+            elif self.c_sharp_type != 'Instruction' and self.c_sharp_type != 'string':
                 default_value = '({0})int.MaxValue'.format(self.c_sharp_type)
             
             return default_value
@@ -57,7 +60,7 @@ class MethodArgument:
 
     def generate_add_operant_operation(self, stream):
         # skip result type as it's send in the constructor
-        if self.name == 'resultType':
+        if self.name == 'resultType' or self.name == 'forceIdAllocation':
             return
         if self.optional:
             stream.write_line("if ({0} != {1})".format(self.name, self.get_default_value()))
@@ -110,7 +113,14 @@ class MethodInfo:
                     i += 1
                 else:
                     self.bound_increment_needed = True
-        
+
+        if self.cl == 'Type-Declaration':
+            force_id_allocation_arg = MethodArgument('forceIdAllocation', 'bool', 'bool', not self.name in ['TypeFunction', 'TypeStruct'], False)
+            if self.name in ['TypeFunction', 'TypeStruct']:
+                self.arguments.insert(len(self.arguments) - 1, force_id_allocation_arg)
+            else:
+                self.arguments.append(force_id_allocation_arg)
+
         for argument in self.arguments:
             self.fix_possible_argument_conflicts(argument.name)
 
@@ -235,7 +245,10 @@ def generate_method_definition(stream, method_info):
     if method_info.bound_increment_needed:
         if method_info.result_type_index != -1:
             argument = method_info.arguments[method_info.result_type_index]
-            stream.write_line('Instruction result = new Instruction(Op.Op{0}, GetNewId(), {1});'.format(method_info.name, argument.name))
+            if method_info.cl == 'Constant-Creation' and method_info.name.startswith('Constant'):
+                stream.write_line('Instruction result = new Instruction(Op.Op{0}, Instruction.InvalidId, {1});'.format(method_info.name, argument.name))
+            else:
+                stream.write_line('Instruction result = new Instruction(Op.Op{0}, GetNewId(), {1});'.format(method_info.name, argument.name))
         else:
             # Optimization: here we explictly don't set the id because it will be set in AddTypeDeclaration/AddLabel.
             # In the end this permit to not reserve id that will be discared.
@@ -254,7 +267,7 @@ def generate_method_definition(stream, method_info):
         argument.generate_add_operant_operation(stream)
 
     if method_info.cl == 'Type-Declaration':
-        stream.write_line('AddTypeDeclaration(result);')
+        stream.write_line('AddTypeDeclaration(result, forceIdAllocation);')
         stream.write_line()
     elif method_info.cl == 'Debug':
         stream.write_line('AddDebug(result);')
@@ -263,7 +276,7 @@ def generate_method_definition(stream, method_info):
         stream.write_line('AddAnnotation(result);')
         stream.write_line()
     elif method_info.cl == 'Constant-Creation' and method_info.name.startswith('Constant'):
-        stream.write_line('AddGlobalVariable(result);')
+        stream.write_line('AddConstant(result);')
         stream.write_line()
     elif not method_info.name == 'Variable' and not method_info.name == 'Label':
         stream.write_line('AddToFunctionDefinitions(result);')

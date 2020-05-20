@@ -9,27 +9,46 @@ namespace Spv.Generator
     {
         public OperandType Type => OperandType.Number;
 
-        private byte[] _data;
-
-        public LiteralInteger(byte[] data)
+        private enum IntegerType
         {
-            _data = data;
+            UInt32,
+            Int32,
+            UInt64,
+            Int64,
+            Float32,
+            Float64,
         }
 
-        public static implicit operator LiteralInteger(int value) => Create(value);
-        public static implicit operator LiteralInteger(uint value) => Create(value);
-        public static implicit operator LiteralInteger(long value) => Create(value);
-        public static implicit operator LiteralInteger(ulong value) => Create(value);
-        public static implicit operator LiteralInteger(float value) => Create(value);
-        public static implicit operator LiteralInteger(double value) => Create(value);
-        public static implicit operator LiteralInteger(Enum value) => Create((int)Convert.ChangeType(value, typeof(int)));
+        private IntegerType _integerType;
+
+        private byte[] _data;
+
+        private LiteralInteger(byte[] data, IntegerType integerType)
+        {
+            _data = data;
+            _integerType = integerType;
+        }
+
+        public static implicit operator LiteralInteger(int value) => Create(value, IntegerType.Int32);
+        public static implicit operator LiteralInteger(uint value) => Create(value, IntegerType.UInt32);
+        public static implicit operator LiteralInteger(long value) => Create(value, IntegerType.Int64);
+        public static implicit operator LiteralInteger(ulong value) => Create(value, IntegerType.UInt64);
+        public static implicit operator LiteralInteger(float value) => Create(value, IntegerType.Float32);
+        public static implicit operator LiteralInteger(double value) => Create(value, IntegerType.Float64);
+        public static implicit operator LiteralInteger(Enum value) => Create((int)Convert.ChangeType(value, typeof(int)), IntegerType.Int32);
 
         // NOTE: this is not in the standard, but this is some syntax sugar useful in some instructions (TypeInt ect)
-        public static implicit operator LiteralInteger(bool value) => Create(Convert.ToInt32(value));
+        public static implicit operator LiteralInteger(bool value) => Create(Convert.ToInt32(value), IntegerType.Int32);
 
-        public static LiteralInteger Create<T>(T value) where T: struct
+
+        public static LiteralInteger CreateForEnum<T>(T value) where T : struct
         {
-            return new LiteralInteger(MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)).ToArray());
+            return Create(value, IntegerType.Int32);
+        }
+
+        private static LiteralInteger Create<T>(T value, IntegerType integerType) where T: struct
+        {
+            return new LiteralInteger(MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)).ToArray(), integerType);
         }
 
         public ushort WordCount => (ushort)(_data.Length / 4);
@@ -41,12 +60,12 @@ namespace Spv.Generator
 
         public override bool Equals(object obj)
         {
-            return obj is LiteralString literalString && Equals(literalString);
+            return obj is LiteralInteger literalInteger && Equals(literalInteger);
         }
 
         public bool Equals(LiteralInteger cmpObj)
         {
-            return Type == cmpObj.Type && _data.SequenceEqual(cmpObj._data);
+            return Type == cmpObj.Type && _integerType == cmpObj._integerType && _data.SequenceEqual(cmpObj._data);
         }
 
         public override int GetHashCode()
@@ -56,7 +75,7 @@ namespace Spv.Generator
 
         public bool Equals(Operand obj)
         {
-            return obj is Instruction instruction && Equals(instruction);
+            return obj is LiteralInteger literalInteger && Equals(literalInteger);
         }
     }
 }

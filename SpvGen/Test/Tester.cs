@@ -33,7 +33,7 @@ namespace Spv.Generator.Test
 
                 Instruction voidType = TypeVoid();
 
-                Instruction mainFunctionType = TypeFunction(voidType);
+                Instruction mainFunctionType = TypeFunction(voidType, true);
                 Instruction mainFunction = Function(voidType, FunctionControlMask.MaskNone, mainFunctionType);
                 AddLabel(Label());
                 Store(outputColor, compositeColor);

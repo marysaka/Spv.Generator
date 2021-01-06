@@ -61,17 +61,17 @@ namespace Spv.Generator
             return _bound++;
         }
 
-        protected void AddCapability(Capability capability)
+        public void AddCapability(Capability capability)
         {
             _capabilities.Add(capability);
         }
 
-        protected void AddExtension(string extension)
+        public void AddExtension(string extension)
         {
             _extensions.Add(extension);
         }
 
-        protected Instruction AddExtInstImport(string import)
+        public Instruction AddExtInstImport(string import)
         {
             Instruction instruction = new Instruction(Op.OpExtInstImport);
             instruction.AddOperand(import);
@@ -113,7 +113,7 @@ namespace Spv.Generator
             _typeDeclarations.Add(instruction);
         }
 
-        protected void AddEntryPoint(ExecutionModel executionModel, Instruction function, string name, params Instruction[] interfaces)
+        public void AddEntryPoint(ExecutionModel executionModel, Instruction function, string name, params Instruction[] interfaces)
         {
             Debug.Assert(function.Opcode == Op.OpFunction);
 
@@ -127,7 +127,7 @@ namespace Spv.Generator
             _entrypoints.Add(entryPoint);
         }
 
-        protected void AddExecutionMode(Instruction function, ExecutionMode mode, params Operand[] parameters)
+        public void AddExecutionMode(Instruction function, ExecutionMode mode, params Operand[] parameters)
         {
             Debug.Assert(function.Opcode == Op.OpFunction);
 
@@ -156,7 +156,7 @@ namespace Spv.Generator
             _debug.Add(debug);
         }
 
-        protected void AddLabel(Instruction label)
+        public void AddLabel(Instruction label)
         {
             Debug.Assert(label.Opcode == Op.OpLabel);
 
@@ -166,7 +166,7 @@ namespace Spv.Generator
         }
 
 
-        protected void AddLocalVariable(Instruction variable)
+        public void AddLocalVariable(Instruction variable)
         {
             // TODO: ensure it has the local modifier
             Debug.Assert(variable.Opcode == Op.OpVariable);
@@ -176,7 +176,7 @@ namespace Spv.Generator
             AddToFunctionDefinitions(variable);
         }
 
-        protected void AddGlobalVariable(Instruction variable)
+        public void AddGlobalVariable(Instruction variable)
         {
             // TODO: ensure it has the global modifier
             // TODO: all constants opcodes (OpSpecXXX and the rest of the OpConstantXXX)
@@ -211,7 +211,7 @@ namespace Spv.Generator
             _globals.Add(constant);
         }
 
-        protected void SetMemoryModel(AddressingModel addressingModel, MemoryModel memoryModel)
+        public void SetMemoryModel(AddressingModel addressingModel, MemoryModel memoryModel)
         {
             _addressingModel = addressingModel;
             _memoryModel = memoryModel;

@@ -225,7 +225,8 @@ def get_type_by_operand(operand):
         'LiteralContextDependentNumber': 'LiteralInteger',
         'LiteralSpecConstantOpInteger': 'LiteralInteger',
         'PairLiteralIntegerIdRef': 'Operand',
-        'PairIdRefLiteralInteger': 'Operand'
+        'PairIdRefLiteralInteger': 'Operand',
+        'LiteralExtInstInteger': 'LiteralInteger',
     }
 
     kind = operand['kind']
@@ -317,11 +318,22 @@ def generate_method_prototye(stream, method_info):
     stream.write(')\n')
 
 def generate_methods_by_class(stream, spec_data, cl):
+    opname_blacklist = [
+        'OpExtInstImport',
+        'OpExtension',
+    ]
+
     stream.indent()
     stream.write_line('// {0}'.format(cl))
     stream.write_line()
     stream.unindent()
     for instruction in get_instructions_by_class(spec_data, cl):
+        opname = instruction['opname']
+
+        # Skip blacklisted op names (already defined with custom apis ect)
+        if opname in opname_blacklist:
+            continue
+
         generate_method_for_instruction(stream, instruction)
 
 def main():
@@ -381,6 +393,7 @@ def main():
     generate_methods_by_class(stream, spec_data, 'Pipe')
     generate_methods_by_class(stream, spec_data, 'Non-Uniform')
     generate_methods_by_class(stream, spec_data, 'Reserved')
+    generate_methods_by_class(stream, spec_data, 'Extension')
 
     stream.write_line('}')
     stream.unindent()

@@ -14,7 +14,6 @@ namespace Spv.Generator.Test
             public void Construct()
             {
                 AddCapability(Capability.Shader);
-                Instruction glslStd450 = AddExtInstImport("GLSL.std.450");
                 SetMemoryModel(AddressingModel.Logical, MemoryModel.Simple);
 
                 Instruction floatType = TypeFloat(32);
@@ -48,7 +47,7 @@ namespace Spv.Generator.Test
 
                 Instruction tempInput = Load(floatType, inputTest);
 
-                Instruction resultSqrt = ExtInst(floatType, glslStd450, 31, tempInput);
+                Instruction resultSqrt = GlslSqrt(floatType, tempInput);
 
                 Store(outputTest, resultSqrt);
                 Store(outputColor, compositeColor);

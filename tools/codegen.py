@@ -4,7 +4,7 @@
 import datetime
 import json
 import sys
-
+import os
 
 class CodeStream:
     def __init__(self):
@@ -91,13 +91,20 @@ class MethodInfo:
                     argument.name = '{0}{1}'.format(argument.name, index)
                     index += 1
 
-    def __init__(self, instruction):
+    def __init__(self, instruction, extinst_info):
+        self.extinst_info = extinst_info
         self.bound_increment_needed = False
         self.result_type_index = -1
-        self.name = instruction['opname'][2:]
+        self.opcode = instruction['opcode']
         self.arguments = []
-        self.cl = instruction['class']
 
+        if extinst_info != None:
+            self.cl = 'ExtInst'
+            self.name = extinst_info['function_prefix'] + instruction['opname'][:1].upper() + instruction['opname'][1:]
+            self.arguments.append(MethodArgument("resultType", 'IdRef', 'Instruction', False, False))
+        else:
+            self.name = instruction['opname'][2:]
+            self.cl = instruction['class']
         i = 0
 
         if 'operands' in instruction:
@@ -244,8 +251,8 @@ def get_type_by_operand(operand):
 
     return result
 
-def generate_method_for_instruction(stream, instruction):
-    method_info = MethodInfo(instruction)
+def generate_method_for_instruction(stream, instruction, extinst_info):
+    method_info = MethodInfo(instruction, extinst_info)
 
     stream.indent()
     generate_method_prototye(stream, method_info)
@@ -256,7 +263,17 @@ def generate_method_definition(stream, method_info):
     stream.write_line('{')
     stream.indent()
 
-    if method_info.bound_increment_needed:
+    if method_info.extinst_info != None:
+        arguments = []
+
+        for argument in method_info.arguments[1:]:
+            arguments.append(argument.name)
+        
+        arguments = ', '.join(arguments)
+
+
+        stream.write_line('return ExtInst(resultType, AddExtInstImport("{0}"), {1}, {2});'.format(method_info.extinst_info['name'], method_info.opcode, arguments))
+    elif method_info.bound_increment_needed:
         if method_info.result_type_index != -1:
             argument = method_info.arguments[method_info.result_type_index]
             if method_info.cl == 'Constant-Creation' and method_info.name.startswith('Constant'):
@@ -275,29 +292,29 @@ def generate_method_definition(stream, method_info):
             raise "TODO"
         stream.write_line('Instruction result = new Instruction(Op.Op{0});'.format(method_info.name))
 
-    stream.write_line()
-
-    for argument in method_info.arguments:
-        argument.generate_add_operant_operation(stream)
-
-    if method_info.cl == 'Type-Declaration':
-        stream.write_line('AddTypeDeclaration(result, forceIdAllocation);')
-        stream.write_line()
-    elif method_info.cl == 'Debug':
-        stream.write_line('AddDebug(result);')
-        stream.write_line()        
-    elif method_info.cl == 'Annotation':
-        stream.write_line('AddAnnotation(result);')
-        stream.write_line()
-    elif method_info.cl == 'Constant-Creation' and method_info.name.startswith('Constant'):
-        stream.write_line('AddConstant(result);')
-        stream.write_line()
-    elif not method_info.name == 'Variable' and not method_info.name == 'Label':
-        stream.write_line('AddToFunctionDefinitions(result);')
+    if method_info.extinst_info == None:
         stream.write_line()
 
+        for argument in method_info.arguments:
+            argument.generate_add_operant_operation(stream)
 
-    stream.write_line('return result;')
+        if method_info.cl == 'Type-Declaration':
+            stream.write_line('AddTypeDeclaration(result, forceIdAllocation);')
+            stream.write_line()
+        elif method_info.cl == 'Debug':
+            stream.write_line('AddDebug(result);')
+            stream.write_line()        
+        elif method_info.cl == 'Annotation':
+            stream.write_line('AddAnnotation(result);')
+            stream.write_line()
+        elif method_info.cl == 'Constant-Creation' and method_info.name.startswith('Constant'):
+            stream.write_line('AddConstant(result);')
+            stream.write_line()
+        elif not method_info.name == 'Variable' and not method_info.name == 'Label':
+            stream.write_line('AddToFunctionDefinitions(result);')
+            stream.write_line()
+        stream.write_line('return result;')
+
     stream.unindent()
     stream.write_line('}')
     stream.write_line()
@@ -317,6 +334,10 @@ def generate_method_prototye(stream, method_info):
     stream.write(', '.join(arguments))
     stream.write(')\n')
 
+def generate_methods_for_extinst(stream, spec_data, extinst_info):
+    for instruction in spec_data['instructions']:
+        generate_method_for_instruction(stream, instruction, extinst_info)
+
 def generate_methods_by_class(stream, spec_data, cl):
     opname_blacklist = [
         'OpExtInstImport',
@@ -334,7 +355,7 @@ def generate_methods_by_class(stream, spec_data, cl):
         if opname in opname_blacklist:
             continue
 
-        generate_method_for_instruction(stream, instruction)
+        generate_method_for_instruction(stream, instruction, None)
 
 def main():
     if len(sys.argv) < 3:
@@ -344,6 +365,17 @@ def main():
     spec_filepath = sys.argv[1]
     result_filepath = sys.argv[2]
 
+
+    extinst_naming_mapping = {
+        'extinst.glsl.std.450.grammar.json': { 'name': 'GLSL.std.450', 'function_prefix': 'Glsl'},
+    }
+
+    spec_filename = os.path.basename(spec_filepath)
+    
+    extinst_info = None
+
+    if spec_filename in extinst_naming_mapping:
+        extinst_info = extinst_naming_mapping[spec_filename]
 
     with open(spec_filepath, "r") as f:
         spec_data = json.loads(f.read())
@@ -370,30 +402,33 @@ def main():
     stream.write_line('{')
 
 
-    generate_methods_by_class(stream, spec_data, 'Miscellaneous')
-    generate_methods_by_class(stream, spec_data, 'Debug')
-    generate_methods_by_class(stream, spec_data, 'Annotation')
-    generate_methods_by_class(stream, spec_data, 'Type-Declaration')
-    generate_methods_by_class(stream, spec_data, 'Constant-Creation')
-    generate_methods_by_class(stream, spec_data, 'Memory')
-    generate_methods_by_class(stream, spec_data, 'Function')
-    generate_methods_by_class(stream, spec_data, 'Image')
-    generate_methods_by_class(stream, spec_data, 'Conversion')
-    generate_methods_by_class(stream, spec_data, 'Composite')
-    generate_methods_by_class(stream, spec_data, 'Arithmetic')
-    generate_methods_by_class(stream, spec_data, 'Bit')
-    generate_methods_by_class(stream, spec_data, 'Relational_and_Logical')
-    generate_methods_by_class(stream, spec_data, 'Derivative')
-    generate_methods_by_class(stream, spec_data, 'Control-Flow')
-    generate_methods_by_class(stream, spec_data, 'Atomic')
-    generate_methods_by_class(stream, spec_data, 'Primitive')
-    generate_methods_by_class(stream, spec_data, 'Barrier')
-    generate_methods_by_class(stream, spec_data, 'Group')
-    generate_methods_by_class(stream, spec_data, 'Device-Side_Enqueue')
-    generate_methods_by_class(stream, spec_data, 'Pipe')
-    generate_methods_by_class(stream, spec_data, 'Non-Uniform')
-    generate_methods_by_class(stream, spec_data, 'Reserved')
-    generate_methods_by_class(stream, spec_data, 'Extension')
+    if extinst_info != None:
+        generate_methods_for_extinst(stream, spec_data, extinst_info)
+    else:
+        generate_methods_by_class(stream, spec_data, 'Miscellaneous')
+        generate_methods_by_class(stream, spec_data, 'Debug')
+        generate_methods_by_class(stream, spec_data, 'Annotation')
+        generate_methods_by_class(stream, spec_data, 'Type-Declaration')
+        generate_methods_by_class(stream, spec_data, 'Constant-Creation')
+        generate_methods_by_class(stream, spec_data, 'Memory')
+        generate_methods_by_class(stream, spec_data, 'Function')
+        generate_methods_by_class(stream, spec_data, 'Image')
+        generate_methods_by_class(stream, spec_data, 'Conversion')
+        generate_methods_by_class(stream, spec_data, 'Composite')
+        generate_methods_by_class(stream, spec_data, 'Arithmetic')
+        generate_methods_by_class(stream, spec_data, 'Bit')
+        generate_methods_by_class(stream, spec_data, 'Relational_and_Logical')
+        generate_methods_by_class(stream, spec_data, 'Derivative')
+        generate_methods_by_class(stream, spec_data, 'Control-Flow')
+        generate_methods_by_class(stream, spec_data, 'Atomic')
+        generate_methods_by_class(stream, spec_data, 'Primitive')
+        generate_methods_by_class(stream, spec_data, 'Barrier')
+        generate_methods_by_class(stream, spec_data, 'Group')
+        generate_methods_by_class(stream, spec_data, 'Device-Side_Enqueue')
+        generate_methods_by_class(stream, spec_data, 'Pipe')
+        generate_methods_by_class(stream, spec_data, 'Non-Uniform')
+        generate_methods_by_class(stream, spec_data, 'Reserved')
+        generate_methods_by_class(stream, spec_data, 'Extension')
 
     stream.write_line('}')
     stream.unindent()

@@ -55,6 +55,18 @@ class MethodArgument:
             
         return default_value
 
+    def get_as_operand(self):
+        enum_defined = [
+            'FPRoundingMode'
+        ]
+
+        kind = self.c_sharp_type
+
+        if kind in enum_defined:
+            return 'LiteralInteger.CreateForEnum({0})'.format(self.name)
+
+        return self.name
+
     def generate_add_operant_operation(self, stream):
         # skip result type as it's send in the constructor
         if self.name == 'resultType' or self.name == 'forceIdAllocation':
@@ -254,6 +266,10 @@ def get_type_by_operand(operand):
 def generate_method_for_instruction(stream, instruction, extinst_info):
     method_info = MethodInfo(instruction, extinst_info)
 
+    # Ignore OpenCL printf as it cannot generate for now.
+    if method_info.name == 'OpenClPrintf':
+        return
+
     stream.indent()
     generate_method_prototye(stream, method_info)
     generate_method_definition(stream, method_info)
@@ -267,7 +283,7 @@ def generate_method_definition(stream, method_info):
         arguments = []
 
         for argument in method_info.arguments[1:]:
-            arguments.append(argument.name)
+            arguments.append(argument.get_as_operand())
         
         arguments = ', '.join(arguments)
 
@@ -368,6 +384,7 @@ def main():
 
     extinst_naming_mapping = {
         'extinst.glsl.std.450.grammar.json': { 'name': 'GLSL.std.450', 'function_prefix': 'Glsl'},
+        'extinst.opencl.std.100.grammar.json': { 'name': 'OpenCL.std', 'function_prefix': 'OpenCl'},
     }
 
     spec_filename = os.path.basename(spec_filepath)
@@ -428,7 +445,6 @@ def main():
         generate_methods_by_class(stream, spec_data, 'Pipe')
         generate_methods_by_class(stream, spec_data, 'Non-Uniform')
         generate_methods_by_class(stream, spec_data, 'Reserved')
-        generate_methods_by_class(stream, spec_data, 'Extension')
 
     stream.write_line('}')
     stream.unindent()

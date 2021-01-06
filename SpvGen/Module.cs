@@ -211,10 +211,36 @@ namespace Spv.Generator
             _globals.Add(constant);
         }
 
+        public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params Operand[] parameters)
+        {
+            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            
+            result.AddOperand(set);
+            result.AddOperand(instruction);
+            result.AddOperand(parameters);
+            AddToFunctionDefinitions(result);
+            
+            return result;
+        }
+
         public void SetMemoryModel(AddressingModel addressingModel, MemoryModel memoryModel)
         {
             _addressingModel = addressingModel;
             _memoryModel = memoryModel;
+        }
+
+        // TODO: Found a way to make the auto generate one used.
+        public Instruction OpenClPrintf(Instruction resultType, Instruction format, params Instruction[] additionalarguments)
+        {
+            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            
+            result.AddOperand(AddExtInstImport("OpenCL.std"));
+            result.AddOperand((LiteralInteger)184);
+            result.AddOperand(format);
+            result.AddOperand(additionalarguments);
+            AddToFunctionDefinitions(result);
+            
+            return result;
         }
 
         public byte[] Generate()

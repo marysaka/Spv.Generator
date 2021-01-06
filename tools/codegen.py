@@ -193,6 +193,8 @@ def get_argument_name(operand, position):
             return 'defaultObj'
         elif name == 'event':
             return 'eventObj'
+        elif name == 'result':
+            return 'resultObj'
 
         return name
 

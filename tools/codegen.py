@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import datetime;
-import json;
-import sys;
+import datetime
+import json
+import sys
 
 
 class CodeStream:
@@ -27,12 +27,13 @@ class CodeStream:
         self.write(line + "\n")
 
 class MethodArgument:
-    def __init__(self, name, real_type, c_sharp_type, optional, variable):
+    def __init__(self, name, real_type, c_sharp_type, optional, variable, behind_optional_argument = None):
         self.name = name
         self.real_type = real_type
         self.c_sharp_type = c_sharp_type
         self.optional = optional
         self.variable = variable
+        self.behind_optional_argument = behind_optional_argument
     
     def get_prototype_name(self):
         if self.optional:
@@ -42,32 +43,36 @@ class MethodArgument:
         return '{0} {1}'.format(self.c_sharp_type, self.name)
 
     def get_default_value(self):
-        if self.optional:
-            default_value = 'null'
+        default_value = 'null'
 
-
-            if self.c_sharp_type == 'bool':
-                default_value = 'false'
-            # Assume enum if it's not an Instruction,
-            # We use some invalid value in this case to detect that the user hasn't send anything
-            # TODO: improve this
-            elif self.c_sharp_type != 'Instruction' and self.c_sharp_type != 'string':
-                default_value = '({0})int.MaxValue'.format(self.c_sharp_type)
+        if self.c_sharp_type == 'bool':
+            default_value = 'false'
+        # Assume enum if it's not an Instruction,
+        # We use some invalid value in this case to detect that the user hasn't send anything
+        # TODO: improve this
+        elif self.c_sharp_type != 'Instruction' and self.c_sharp_type != 'string':
+            default_value = '({0})int.MaxValue'.format(self.c_sharp_type)
             
-            return default_value
-        
-        return None
+        return default_value
 
     def generate_add_operant_operation(self, stream):
         # skip result type as it's send in the constructor
         if self.name == 'resultType' or self.name == 'forceIdAllocation':
             return
+
         if self.optional:
-            stream.write_line("if ({0} != {1})".format(self.name, self.get_default_value()))
+            optional_check = self
+        elif self.behind_optional_argument:
+            optional_check = self.behind_optional_argument
+        else:
+            optional_check = None
+
+        if optional_check != None:
+            stream.write_line("if ({0} != {1})".format(optional_check.name, optional_check.get_default_value()))
             stream.write_line("{")
             stream.indent()
         stream.write_line('result.AddOperand({0});'.format(self.name))
-        if self.optional:
+        if optional_check != None:
             stream.unindent()
             stream.write_line("}")
 
@@ -103,8 +108,19 @@ class MethodInfo:
 
                     variable =  'quantifier' in operand and operand['quantifier'] == '*'
                     optional =  'quantifier' in operand and operand['quantifier'] == '?'
-                    self.arguments.append(MethodArgument(get_argument_name(operand, i), operand['kind'], get_type_by_operand(operand), optional, variable))
-                    
+
+                    # The core grammar doesn't contains the optional <id> when ImageOperands is defined on image instructions, add them manually.
+                    if operand['kind'] == "ImageOperands" and self.cl == "Image":
+                        image_operands = MethodArgument(get_argument_name(operand, i), operand['kind'], get_type_by_operand(operand), False, False)
+
+                        if optional:
+                            # TODO: improve this as this generate two if..
+                            image_operands.behind_optional_argument = image_operands
+
+                        self.arguments.append(image_operands)
+                        self.arguments.append(MethodArgument("imageOperandIds", 'IdRef', 'Instruction', False, True, image_operands))
+                    else:
+                        self.arguments.append(MethodArgument(get_argument_name(operand, i), operand['kind'], get_type_by_operand(operand), optional, variable))
                     
                     # Decoration and ExecutionMode are special as they carry variable operands
                     if operand['kind'] in ['Decoration', 'ExecutionMode']:
@@ -143,9 +159,6 @@ def get_argument_name(operand, position):
         return 'resultType'
     
     if 'name' in operand and not '\n' in operand['name'] and not '~' in operand['name'] and not ',' in operand['name'] and operand['name'].isascii():
-        
-        i = 0
-
         name = operand['name'].replace('\'', '').replace(' ', '').replace('.', '')
 
         name = name[0].lower() + name[1:]

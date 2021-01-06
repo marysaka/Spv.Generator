@@ -11,7 +11,7 @@ namespace Spv.Generator.Test
         {
             public TestModule() : base(Specification.Version) {}
 
-            protected override void Construct()
+            public void Construct()
             {
                 AddCapability(Capability.Shader);
                 SetMemoryModel(AddressingModel.Logical, MemoryModel.Simple);
@@ -47,7 +47,8 @@ namespace Spv.Generator.Test
 
         static void Main(string[] Args)
         {
-            Module module = new TestModule();
+            TestModule module = new TestModule();
+            module.Construct();
 
             byte[] ModuleData = module.Generate();
 

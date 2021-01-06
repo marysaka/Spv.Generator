@@ -217,15 +217,8 @@ namespace Spv.Generator
             _memoryModel = memoryModel;
         }
 
-        protected virtual void Construct()
-        {
-            throw new NotImplementedException("Construct needs to be overriten!");
-        }
-
         public byte[] Generate()
         {
-            Construct();
-
             using (MemoryStream stream = new MemoryStream())
             {
                 BinaryWriter writer = new BinaryWriter(stream);

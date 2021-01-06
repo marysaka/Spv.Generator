@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import datetime;
@@ -290,7 +290,7 @@ def generate_method_definition(stream, method_info):
 
 def generate_method_prototye(stream, method_info):
     stream.begin_line()
-    stream.write('protected Instruction {0}('.format(method_info.name))
+    stream.write('public Instruction {0}('.format(method_info.name))
 
     arguments = []
 

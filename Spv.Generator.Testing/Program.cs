@@ -1,15 +1,14 @@
 ﻿using System;
 using System.IO;
-
 using static Spv.Specification;
 
-namespace Spv.Generator.Test
+namespace Spv.Generator.Testing
 {
-    class Tester
+    class Program
     {
-        public class TestModule : Module
+        private class TestModule : Module
         {
-            public TestModule() : base(Specification.Version) {}
+            public TestModule() : base(Specification.Version) { }
 
             public void Construct()
             {

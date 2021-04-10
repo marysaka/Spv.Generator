@@ -193,6 +193,11 @@ namespace Spv.Generator
             return _operands.SequenceEqual(cmpObj._operands);
         }
 
+        public bool EqualsResultType(Instruction cmpObj)
+        {
+            return _resultType.Opcode == cmpObj._resultType.Opcode && _resultType.EqualsContent(cmpObj._resultType);
+        }
+
         public override int GetHashCode()
         {
             return HashCode.Combine(Opcode, Id, _resultType, _operands);

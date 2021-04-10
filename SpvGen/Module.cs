@@ -197,7 +197,7 @@ namespace Spv.Generator
 
             foreach (Instruction global in _globals)
             {
-                if (global.Opcode == constant.Opcode && global.EqualsContent(constant))
+                if (global.Opcode == constant.Opcode && global.EqualsContent(constant) && global.EqualsResultType(constant))
                 {
                     // update the duplicate instance to use the good id so it ends up being encoded right.
                     constant.SetId(global.Id);

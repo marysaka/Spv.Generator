@@ -13,5 +13,16 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\spirv.core.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.glsl.std.450.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.opencl.std.100.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-gcn-shader.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-shader-ballot.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-shader-trinary-minmax.grammar.json" />
+
+
+  </ItemGroup>
 
 </Project>

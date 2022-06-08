@@ -383,12 +383,13 @@ def main():
     spec_filepath = sys.argv[1]
     result_filepath = sys.argv[2]
 
-
+    # Get extension files, names and prefixes
     extinst_naming_mapping = {
         'extinst.glsl.std.450.grammar.json': { 'name': 'GLSL.std.450', 'function_prefix': 'Glsl'},
         'extinst.opencl.std.100.grammar.json': { 'name': 'OpenCL.std', 'function_prefix': 'OpenCl'},
     }
 
+    # gets the path of the directory for the other files
     spec_filename = os.path.basename(spec_filepath)
     
     extinst_info = None

@@ -12,13 +12,18 @@ public class ModuleGenerator : ISourceGenerator
     public void Execute(GeneratorExecutionContext context)
     {
         var assembly = typeof(ModuleGenerator).GetTypeInfo().Assembly;
-        string resourceName = 
+        string resourceCoreName = 
             assembly.GetManifestResourceNames()
             .Single(str => str.EndsWith("spirv.core.grammar.json"));
-        var spirvCoreRes = assembly.GetManifestResourceStream(resourceName);
+            
+        string resourceGlslName = 
+            assembly.GetManifestResourceNames()
+            .Single(str => str.EndsWith("extinst.glsl.std.450.grammar.json"));
+            
+        var spirvCoreRes = assembly.GetManifestResourceStream(resourceCoreName);
         string spirvCoreStr = new StreamReader(spirvCoreRes).ReadToEnd();
         var spirvCore = JsonDocument.Parse(spirvCoreStr);
-        
+        var spirvGlsl = JsonDocument.Parse(new StreamReader(assembly.GetManifestResourceStream(resourceCoreName)).ReadToEnd());
         var generated = new CodeBuilder()
         .AppendLine("using static Spv.Specification;")
         .AppendLine("namespace Spv.Generator")

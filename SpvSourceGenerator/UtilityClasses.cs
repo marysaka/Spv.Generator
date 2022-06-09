@@ -11,18 +11,24 @@ public class MethodInfo {
     public List<string> arguments;
     void FixPossibleArgumentConflicts(string name)
     {
-        conflict_count = -1
+        conflictCount = -1;
         
-        foreach(var argument in this.arguments):
-            if argument.name == name:
-                conflict_count += 1
+        foreach(var argument in arguments)
+            if(argument.name == name)
+                conflictCount += 1;
         
-        if conflict_count > 0:
-            index = 0
-            for argument in self.arguments:
-                if argument.name == name:
+        if(conflictCount > 0)
+        {
+            int index = 0;
+            foreach(var argument in arguments)
+            {
+                if(argument.name == name)
+                {
                     argument.name = '{0}{1}'.format(argument.name, index)
                     index += 1
+                }
+            }
+        }
     }
     public MethodInfo(JsonElement instruction, JsonDocument extinst_info)
     {

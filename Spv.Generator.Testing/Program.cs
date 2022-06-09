@@ -15,7 +15,6 @@ namespace Spv.Generator.Testing
             {
                 AddCapability(Capability.Shader);
                 SetMemoryModel(AddressingModel.Logical, MemoryModel.Simple);
-                Console.WriteLine(this.Name);
                 // Instruction floatType = TypeFloat(32);
                 // Instruction floatInputType = TypePointer(StorageClass.Input, floatType);
                 // Instruction floatOutputType = TypePointer(StorageClass.Output, floatType);

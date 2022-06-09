@@ -20,15 +20,39 @@ public class ModuleGenerator : ISourceGenerator
         var spirvCore = JsonDocument.Parse(spirvCoreStr);
         
         var generated = new StringBuilder()
+        .AppendLine("using static Spv.Specification;")
         .AppendLine("namespace Spv.Generator {")
-        .AppendLine("public partial class Module{")
-        .Append(new string(' ', 4))
-        .AppendLine("public string Name = \""+ spirvCore + "\";}}");
+        .AppendLine("public partial class Module{");
 
-        GenerateMethodsByClass(generated, spirvCore,"Miscellaneous");
+        List<string> classes = new(){
+            "Miscellaneous",
+            "Debug",
+            "Annotation",
+            "Type",
+            "Constant",
+            "Memory",
+            "Function",
+            "Image",
+            "Conversion",
+            "Composite",
+            "Arithmetic",
+            "Bit",
+            "Relational_and_Logical",
+            "Derivative",
+            "Control",
+            "Atomic",
+            "Primitive",
+            "Barrier",
+            "Group",
+            "Device",
+            "Pipe",
+            "Non",
+            "Reserved",
+        };
+        classes.ForEach(x =>MethodInfo.GenerateMethodsByClass(generated, spirvCore,x));
 
         var compil = context.Compilation;
-        context.AddSource("Module.Generated.cs", generated.ToString());
+        context.AddSource("Module.Generated.cs", generated.AppendLine("}\n}").ToString());
         
     }
 
@@ -37,34 +61,4 @@ public class ModuleGenerator : ISourceGenerator
         
     }
 
-    static string[] blacklist = {
-        "OpExtInstImport",
-        "OpExtension",
-        };
-    public static void GenerateMethodsByClass(StringBuilder code, JsonDocument spec, string className)
-    {
-        code.Append(new string(' ', 4));
-        code.Append("// ").AppendLine(className);
-        foreach(var instruction in GetInstructionByClass(spec,className))
-        {
-            var opname = instruction.GetProperty("opname").GetString();
-            if(blacklist.Contains(opname))
-                continue;
-            GenerateMethodForInstruction(code, instruction, null);
-        }
-    }
-    public static List<JsonElement> GetInstructionByClass(JsonDocument spec, string className)
-    {
-        var result = new List<JsonElement>();
-        foreach( var instruction in spec.RootElement.GetProperty("instructions").EnumerateArray())
-        {
-            if(instruction.GetProperty("class").GetString() == className)
-                result.Add(instruction);
-        }
-        return result;
-    }
-    public static void GenerateMethodForInstruction(StringBuilder code, JsonElement e, JsonDocument extInstructionInfo)
-    {
-        
-    }
 }

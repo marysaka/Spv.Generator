@@ -19,17 +19,21 @@ public class ModuleGenerator : ISourceGenerator
         string spirvCoreStr = new StreamReader(spirvCoreRes).ReadToEnd();
         var spirvCore = JsonDocument.Parse(spirvCoreStr);
         
-        var generated = new StringBuilder()
+        var generated = new CodeBuilder()
         .AppendLine("using static Spv.Specification;")
-        .AppendLine("namespace Spv.Generator {")
-        .AppendLine("public partial class Module{");
+        .AppendLine("namespace Spv.Generator")
+        .AppendLine("{")
+        .Indent()
+        .AppendLineWithIndent("public partial class Module")
+        .AppendLineWithIndent("{")
+        .Indent();
 
         List<string> classes = new(){
             "Miscellaneous",
             "Debug",
             "Annotation",
-            "Type",
-            "Constant",
+            "Type-Declaration",
+            "Constant-Creation",
             "Memory",
             "Function",
             "Image",
@@ -39,20 +43,23 @@ public class ModuleGenerator : ISourceGenerator
             "Bit",
             "Relational_and_Logical",
             "Derivative",
-            "Control",
+            "Control-Flow",
             "Atomic",
             "Primitive",
             "Barrier",
             "Group",
-            "Device",
+            "Device-Side_Enqueue",
             "Pipe",
-            "Non",
+            "Non-Uniform",
             "Reserved",
         };
         classes.ForEach(x =>MethodInfo.GenerateMethodsByClass(generated, spirvCore,x));
-
+        generated
+        .AppendLineWithIndent("}")
+        .Dedent()
+        .AppendLineWithIndent("}");
         var compil = context.Compilation;
-        context.AddSource("Module.Generated.cs", generated.AppendLine("}\n}").ToString());
+        context.AddSource("Module.Generated.cs", generated.ToString());
         
     }
 

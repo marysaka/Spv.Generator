@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System;
 
 namespace SpvSourceGenerator;
 
@@ -57,12 +58,13 @@ public class MethodArgument
         var enumDefined = new List<string>{
             "FPRoundingMode"
         };
+        
         if (enumDefined.Contains(CSType))
             return $"LiteralInteger.CreateForEnum({Name})";
         return Name;
     }
 
-    public void AddOperandOperation(StringBuilder code)
+    public void AddOperandOperation(CodeBuilder code)
     {
         if (Name == "resultType" || Name == "forceIdAllocation")
             return;
@@ -75,13 +77,13 @@ public class MethodArgument
 
         if (optionalCheck is not null)
         {
-            code.AppendLine($"if({optionalCheck.Name} != {optionalCheck.GetDefaultValue()})");
-            code.AppendLine("{");
+            code.AppendLineWithIndent($"if({optionalCheck.Name} != {optionalCheck.GetDefaultValue()})");
+            code.AppendLineWithIndent("{").Indent();
         }
-        code.AppendLine($"result.AddOperand({Name})");
+        code.AppendLineWithIndent($"result.AddOperand({Name});");
         if (optionalCheck is not null)
         {
-            code.AppendLine("}");
+            code.AppendLineWithIndent("}").Dedent();
         }
     }
 
@@ -122,7 +124,7 @@ public class MethodInfo
         }
         var i = 0;
 
-        if (instruction.TryGetProperty("operand", out JsonElement operands))
+        if (instruction.TryGetProperty("operands", out JsonElement operands))
         {
             foreach (var operand in operands.EnumerateArray())
             {
@@ -199,10 +201,9 @@ public class MethodInfo
         "OpExtInstImport",
         "OpExtension",
         };
-    public static void GenerateMethodsByClass(StringBuilder code, JsonDocument spec, string className)
+    public static void GenerateMethodsByClass(CodeBuilder code, JsonDocument spec, string className)
     {
-        code.Append(new string(' ', 4));
-        code.Append("// ").AppendLine(className);
+        code.AppendWithIndent("// ").AppendLine(className);
         foreach(var instruction in GetInstructionByClass(spec,className))
         {
             var opname = instruction.GetProperty("opname").GetString();
@@ -221,7 +222,7 @@ public class MethodInfo
         }
         return result;
     }
-    public static void GenerateMethodForInstruction(StringBuilder code, JsonElement instruction, JsonDocument extInstructionInfo)
+    public static void GenerateMethodForInstruction(CodeBuilder code, JsonElement instruction, JsonDocument extInstructionInfo)
     {
         var mi = new MethodInfo(instruction, extInstructionInfo);
         if(mi.Name == "OpenClPrinf")
@@ -230,9 +231,9 @@ public class MethodInfo
         GenerateMethodDefinition(code, mi);
     }
 
-    private static void GenerateMethodDefinition(StringBuilder code, MethodInfo mi)
+    private static void GenerateMethodDefinition(CodeBuilder code, MethodInfo mi)
     {
-        code.AppendLine("{");
+        code.AppendLineWithIndent("{").Indent();
         if(mi.ExtinstInfo is not null)
         {
             var arguments = new List<string>();
@@ -240,7 +241,7 @@ public class MethodInfo
             {
                 arguments.Add(arg.AsOperand());
             }
-            code.AppendLine(
+            code.AppendLineWithIndent(
                 $"return ExtInst(resultType, AddExtInstImport(\"{mi.ExtinstInfo.RootElement.GetProperty("name")}\"), {mi.OpCode}, {string.Join(", ", arguments)});"
             );
         }
@@ -250,23 +251,23 @@ public class MethodInfo
             {
                 var argument = mi.Arguments[mi.ResultTypeIndex];
                 if(mi.CL== "Constant-Creation" && mi.Name.StartsWith("Constant"))
-                    code.AppendLine($"Instruction result = new Instruction({mi.Name}, Instruction.InvalidId, {argument.Name})");
+                    code.AppendLineWithIndent($"Instruction result = new Instruction({mi.Name}, Instruction.InvalidId, {argument.Name});");
                 else
-                    code.AppendLine($"Instruction result = new Instruction({mi.Name}, GetNewId(), {argument.Name})");
+                    code.AppendLineWithIndent($"Instruction result = new Instruction({mi.Name}, GetNewId(), {argument.Name});");
             }
             else
             {
                 if(mi.CL == "Type-Declaration" || mi.Name == "Label")
-                    code.AppendLine($"Instruction result = new Instruction(Op.{mi.Name});");
+                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name});");
                 else
-                    code.AppendLine($"Instruction result = new Instruction(Op.{mi.Name}, GetNewId());");
+                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name}, GetNewId());");
             }
         }
         else
         {
             if(mi.ResultTypeIndex != -1)
                 throw new NotImplementedException();
-            code.AppendLine($"Instruction result = new Instruction(Op.{mi.Name});");
+            code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name});");
         }
         if(mi.ExtinstInfo is null)
         {
@@ -275,25 +276,26 @@ public class MethodInfo
                 arg.AddOperandOperation(code);
             
             if(mi.CL == "Type-Declaration")
-                code.AppendLine("AddTypeDeclaration(result, forceIdAllocation);").AppendLine();
+                code.AppendLineWithIndent("AddTypeDeclaration(result, forceIdAllocation);").AppendLine();
             else if(mi.CL == "Debug")
-                code.AppendLine("AddDebug(result);").AppendLine();
+                code.AppendLineWithIndent("AddDebug(result);").AppendLine();
             else if(mi.CL == "Annotation")
-                code.AppendLine("AddAnnotation(result);").AppendLine();
+                code.AppendLineWithIndent("AddAnnotation(result);").AppendLine();
             else if(mi.CL == "Constant-Creation" && mi.Name.StartsWith("Constant"))
-                code.AppendLine("AddConstant(result);").AppendLine();
+                code.AppendLineWithIndent("AddConstant(result);").AppendLine();
             else if(mi.Name != "Variable" && mi.Name != "Label")
-                code.AppendLine("AddToFunctionDefinitions(result);").AppendLine();
+                code.AppendLineWithIndent("AddToFunctionDefinitions(result);").AppendLine();
 
-            code.AppendLine("return result;")
-            .AppendLine("}");
+            code.AppendLineWithIndent("return result;")
+            .Dedent()
+            .AppendLineWithIndent("}");
 
         }
     }
 
-    public static void GenerateMethodPrototype(StringBuilder code, MethodInfo mi)
+    public static void GenerateMethodPrototype(CodeBuilder code, MethodInfo mi)
     {
-        code.Append($"public Instruction {mi.Name}(");
+        code.AppendWithIndent($"public Instruction {mi.Name}(");
         var arguments = new List<string>();
 
         var i = 0;
@@ -347,7 +349,7 @@ public class MethodInfo
         if(namemapping.Contains(operand.GetProperty("kind").GetString()))
         {
             var x = operand.GetProperty("kind").GetString();
-            return x.Substring(1).ToLower() + x.Substring(1,x.Length);
+            return string.Concat(x.Substring(0,1).ToLower(), x.AsSpan(1,x.Length-1));
         }
         if(operand.TryGetProperty("name", out var nameProp2) && nameProp2.GetString() == "\'D~ref~\'")
             return "parameters";
@@ -383,7 +385,7 @@ public class MethodInfo
         string result = string.Empty;
         if(typeMapping.TryGetValue(kind, out var r))
             result = r;
-        if(enumMasks.Contains(kind))
+        else if(enumMasks.Contains(kind))
             result = kind + "Mask";
         return result;
     }

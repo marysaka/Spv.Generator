@@ -152,7 +152,7 @@ public class MethodInfo
                         Arguments.Add(new MethodArgument("imageOperandIds", "IdRef", "Instruction", false, true, image_operands));
                     }
                     else
-                        Arguments.Add(new MethodArgument(GetArgumentName(operand, i), operand.GetProperty("kind").GetString(), GetTypeByOperand(operand), optional, variable));
+                        Arguments.Add(new MethodArgument(GetArgumentName(op, i), op.GetProperty("kind").GetString(), GetTypeByOperand(op), optional, variable));
 
                     //Decoration and ExecutionMode are special as they carry variable operands
                     if (new string[] { "Decoration", "ExecutionMode" }.Contains(operand.GetProperty("kind").GetString()))
@@ -251,9 +251,9 @@ public class MethodInfo
             {
                 var argument = mi.Arguments[mi.ResultTypeIndex];
                 if(mi.CL== "Constant-Creation" && mi.Name.StartsWith("Constant"))
-                    code.AppendLineWithIndent($"Instruction result = new Instruction({mi.Name}, Instruction.InvalidId, {argument.Name});");
+                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name}, Instruction.InvalidId, {argument.Name});");
                 else
-                    code.AppendLineWithIndent($"Instruction result = new Instruction({mi.Name}, GetNewId(), {argument.Name});");
+                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name}, GetNewId(), {argument.Name});");
             }
             else
             {
@@ -295,16 +295,19 @@ public class MethodInfo
 
     public static void GenerateMethodPrototype(CodeBuilder code, MethodInfo mi)
     {
-        code.AppendWithIndent($"public Instruction {mi.Name}(");
+        code.AppendWithIndent($"public Instruction {mi.Name[2..]}(");
         var arguments = new List<string>();
+        arguments = 
+            mi.Arguments
+            .Where(x => !x.GetPrototypeName().Contains("params"))
+            .Select(x => x.GetPrototypeName())
+            .ToList();
 
-        var i = 0;
-
-        foreach(var arg in mi.Arguments)
-        {
-            arguments.Add(arg.GetPrototypeName());
-            i+=1;
-        }
+        if(mi.Arguments.Any(x => x.GetPrototypeName().Contains("params")))
+            arguments.Add(
+                mi.Arguments.First(x => x.GetPrototypeName().Contains("params")).GetPrototypeName()
+            );
+        
         code.Append(string.Join(", ", arguments));
         code.AppendLine(")");
 
@@ -382,7 +385,7 @@ public class MethodInfo
             };
 
         var kind = operand.GetProperty("kind").GetString();
-        string result = string.Empty;
+        string result = kind;
         if(typeMapping.TryGetValue(kind, out var r))
             result = r;
         else if(enumMasks.Contains(kind))

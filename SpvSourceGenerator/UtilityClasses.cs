@@ -209,8 +209,14 @@ public class MethodInfo
             var opname = instruction.GetProperty("opname").GetString();
             if(blacklist.Contains(opname))
                 continue;
-            GenerateMethodForInstruction(code, instruction, null);
+            GenerateMethodForInstruction(code, instruction);
         }
+    }
+
+    public static void GenerateMethodsForExtinst(CodeBuilder code, JsonDocument spec, JsonDocument extinstInfo)
+    {
+        foreach(var instruction in spec.RootElement.GetProperty("instructions").EnumerateArray())
+            GenerateMethodForInstruction(code, instruction, extinstInfo);
     }
     public static List<JsonElement> GetInstructionByClass(JsonDocument spec, string className)
     {
@@ -222,13 +228,46 @@ public class MethodInfo
         }
         return result;
     }
-    public static void GenerateMethodForInstruction(CodeBuilder code, JsonElement instruction, JsonDocument extInstructionInfo)
+
+    public static void GenerateMethodForInstruction(CodeBuilder code, JsonElement instruction)
     {
-        var mi = new MethodInfo(instruction, extInstructionInfo);
-        if(mi.Name == "OpenClPrinf")
+        var mi = new MethodInfo(instruction, null);
+        if(mi.Name == "OpenClPrintf")
             return;
         GenerateMethodPrototype(code, mi);
         GenerateMethodDefinition(code, mi);
+    }
+
+    public static void GenerateMethodForInstruction(CodeBuilder code, JsonElement instruction, JsonDocument extInstructionInfo)
+    {
+        var mi = new MethodInfo(instruction, extInstructionInfo);
+        if(mi.Name == "OpenClPrintf")
+            return;
+        GenerateMethodPrototype(code, mi);
+        GenerateMethodDefinition(code, mi);
+    }
+
+    public static void GenerateMethodPrototype(CodeBuilder code, MethodInfo mi)
+    {
+        var name = mi.Name.Contains("Glsl") ? mi.Name.Replace("GlslOp", "Glsl") : mi.Name[2..];
+        code.AppendWithIndent($"public Instruction {name}(");
+        var arguments = new List<string>();
+        arguments = 
+            mi.Arguments
+            .Where(x => !x.GetPrototypeName().Contains("params"))
+            .Select(x => x.GetPrototypeName())
+            .ToList();
+
+        if(mi.Arguments.Any(x => x.GetPrototypeName().Contains("params")))
+            arguments.Add(
+                mi.Arguments.First(x => x.GetPrototypeName().Contains("params")).GetPrototypeName()
+            );
+        
+        
+        
+        code.Append(string.Join(", ", arguments));
+        code.AppendLine(")");
+
     }
 
     private static void GenerateMethodDefinition(CodeBuilder code, MethodInfo mi)
@@ -237,7 +276,7 @@ public class MethodInfo
         if(mi.ExtinstInfo is not null)
         {
             var arguments = new List<string>();
-            foreach(var arg in mi.Arguments.GetRange(1, mi.Arguments.Count))
+            foreach(var arg in mi.Arguments.GetRange(1, mi.Arguments.Count -1))
             {
                 arguments.Add(arg.AsOperand());
             }
@@ -275,43 +314,26 @@ public class MethodInfo
             foreach(var arg in mi.Arguments)
                 arg.AddOperandOperation(code);
             
-            if(mi.CL == "Type-Declaration")
+            if(mi.CL.Contains("Type-Declaration"))
                 code.AppendLineWithIndent("AddTypeDeclaration(result, forceIdAllocation);").AppendLine();
-            else if(mi.CL == "Debug")
+            else if(mi.CL.Contains("Debug"))
                 code.AppendLineWithIndent("AddDebug(result);").AppendLine();
-            else if(mi.CL == "Annotation")
+            else if(mi.CL.Contains("Annotation"))
                 code.AppendLineWithIndent("AddAnnotation(result);").AppendLine();
-            else if(mi.CL == "Constant-Creation" && mi.Name.StartsWith("Constant"))
+            else if(mi.CL.Contains("Constant-Creation") && mi.Name.StartsWith("Constant"))
                 code.AppendLineWithIndent("AddConstant(result);").AppendLine();
-            else if(mi.Name != "Variable" && mi.Name != "Label")
+            else if(!mi.Name.Contains("Variable") && !mi.Name.Contains("Label"))
                 code.AppendLineWithIndent("AddToFunctionDefinitions(result);").AppendLine();
 
-            code.AppendLineWithIndent("return result;")
-            .Dedent()
-            .AppendLineWithIndent("}");
+            code.AppendLineWithIndent("return result;");
 
         }
+        code
+        .Dedent()
+        .AppendLineWithIndent("}");
     }
 
-    public static void GenerateMethodPrototype(CodeBuilder code, MethodInfo mi)
-    {
-        code.AppendWithIndent($"public Instruction {mi.Name[2..]}(");
-        var arguments = new List<string>();
-        arguments = 
-            mi.Arguments
-            .Where(x => !x.GetPrototypeName().Contains("params"))
-            .Select(x => x.GetPrototypeName())
-            .ToList();
-
-        if(mi.Arguments.Any(x => x.GetPrototypeName().Contains("params")))
-            arguments.Add(
-                mi.Arguments.First(x => x.GetPrototypeName().Contains("params")).GetPrototypeName()
-            );
-        
-        code.Append(string.Join(", ", arguments));
-        code.AppendLine(")");
-
-    }
+    
     public static string GetArgumentName(JsonElement operand, int position)
     {
         if(operand.GetProperty("kind").GetString() == "IdResultType")

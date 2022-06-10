@@ -380,6 +380,7 @@ def main():
         print("usage: %s grammar.json Target.cs" % (sys.argv[0]))
         exit(1)
 
+    # spec file path is the core file
     spec_filepath = sys.argv[1]
     result_filepath = sys.argv[2]
 

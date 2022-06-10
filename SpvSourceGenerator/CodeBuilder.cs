@@ -7,7 +7,7 @@ public class CodeBuilder
     StringBuilder code = new();
     int indent = 0;
     string indentation => new string(' ',indent * 4);
-    
+
     public CodeBuilder Indent()
     {
         indent += 1;

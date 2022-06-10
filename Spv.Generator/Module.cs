@@ -102,7 +102,6 @@ namespace Spv.Generator
                     {
                         // update the duplicate instance to use the good id so it ends up being encoded right.
                         instruction.SetId(typeDeclaration.Id);
-
                         return;
                     }
                 }

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using static Spv.Specification;
 
 namespace Spv.Generator
@@ -19,7 +17,7 @@ namespace Spv.Generator
         // Follow spec order here why keeping it as dumb as possible.
         private List<Capability> _capabilities;
         private List<string> _extensions;
-        private List<Instruction> _extInstImports;
+        private Dictionary<DeterministicStringKey, Instruction> _extInstImports;
         private AddressingModel _addressingModel;
         private MemoryModel _memoryModel;
 
@@ -29,31 +27,42 @@ namespace Spv.Generator
         private List<Instruction> _annotations;
 
         // In the declaration block.
-        private List<Instruction> _typeDeclarations;
+        private Dictionary<TypeDeclarationKey, Instruction> _typeDeclarations;
         // In the declaration block.
         private List<Instruction> _globals;
+        // In the declaration block.
+        private Dictionary<ConstantKey, Instruction> _constants;
         // In the declaration block, for function that aren't defined in the module.
         private List<Instruction> _functionsDeclarations;
 
         private List<Instruction> _functionsDefinitions;
 
-        public Module(uint version)
+        private GeneratorPool<Instruction> _instPool;
+        private GeneratorPool<LiteralInteger> _integerPool;
+
+        public Module(uint version, GeneratorPool<Instruction> instPool = null, GeneratorPool<LiteralInteger> integerPool = null)
         {
             _version = version;
             _bound = 1;
             _capabilities = new List<Capability>();
             _extensions = new List<string>();
-            _extInstImports = new List<Instruction>();
+            _extInstImports = new Dictionary<DeterministicStringKey, Instruction>();
             _addressingModel = AddressingModel.Logical;
             _memoryModel = MemoryModel.Simple;
             _entrypoints = new List<Instruction>();
             _executionModes = new List<Instruction>();
             _debug = new List<Instruction>();
             _annotations = new List<Instruction>();
-            _typeDeclarations = new List<Instruction>();
+            _typeDeclarations = new Dictionary<TypeDeclarationKey, Instruction>();
+            _constants = new Dictionary<ConstantKey, Instruction>();
             _globals = new List<Instruction>();
             _functionsDeclarations = new List<Instruction>();
             _functionsDefinitions = new List<Instruction>();
+
+            _instPool = instPool ?? new GeneratorPool<Instruction>();
+            _integerPool = integerPool ?? new GeneratorPool<LiteralInteger>();
+
+            LiteralInteger.RegisterPool(_integerPool);
         }
 
         private uint GetNewId()
@@ -71,52 +80,60 @@ namespace Spv.Generator
             _extensions.Add(extension);
         }
 
+        public Instruction NewInstruction(Op opcode, uint id = Instruction.InvalidId, Instruction resultType = null)
+        {
+            var result = _instPool.Allocate();
+            result.Set(opcode, id, resultType);
+
+            return result;
+        }
+
         public Instruction AddExtInstImport(string import)
         {
-            Instruction instruction = new Instruction(Op.OpExtInstImport);
-            instruction.AddOperand(import);
+            var key = new DeterministicStringKey(import);
 
-            foreach (Instruction extInstImport in _extInstImports)
+            if (_extInstImports.TryGetValue(key, out Instruction extInstImport))
             {
-                if (extInstImport.Opcode == Op.OpExtInstImport && extInstImport.EqualsContent(instruction))
-                {
-                    // update the duplicate instance to use the good id so it ends up being encoded right.
-                    return extInstImport;
-                }
+                // update the duplicate instance to use the good id so it ends up being encoded right.
+                return extInstImport;
             }
+
+            Instruction instruction = NewInstruction(Op.OpExtInstImport);
+            instruction.AddOperand(import);
 
             instruction.SetId(GetNewId());
 
-            _extInstImports.Add(instruction);
+            _extInstImports.Add(key, instruction);
 
             return instruction;
         }
 
         private void AddTypeDeclaration(Instruction instruction, bool forceIdAllocation)
         {
+            var key = new TypeDeclarationKey(instruction);
+
             if (!forceIdAllocation)
             {
-                foreach (Instruction typeDeclaration in _typeDeclarations)
+                if (_typeDeclarations.TryGetValue(key, out Instruction typeDeclaration))
                 {
-                    if (typeDeclaration.Opcode == instruction.Opcode && typeDeclaration.EqualsContent(instruction))
-                    {
-                        // update the duplicate instance to use the good id so it ends up being encoded right.
-                        instruction.SetId(typeDeclaration.Id);
-                        return;
-                    }
+                    // update the duplicate instance to use the good id so it ends up being encoded right.
+
+                    instruction.SetId(typeDeclaration.Id);
+
+                    return;
                 }
             }
 
             instruction.SetId(GetNewId());
 
-            _typeDeclarations.Add(instruction);
+            _typeDeclarations.Add(key, instruction);
         }
 
         public void AddEntryPoint(ExecutionModel executionModel, Instruction function, string name, params Instruction[] interfaces)
         {
             Debug.Assert(function.Opcode == Op.OpFunction);
 
-            Instruction entryPoint = new Instruction(Op.OpEntryPoint);
+            Instruction entryPoint = NewInstruction(Op.OpEntryPoint);
 
             entryPoint.AddOperand(executionModel);
             entryPoint.AddOperand(function);
@@ -130,7 +147,7 @@ namespace Spv.Generator
         {
             Debug.Assert(function.Opcode == Op.OpFunction);
 
-            Instruction executionModeInstruction = new Instruction(Op.OpExecutionMode);
+            Instruction executionModeInstruction = NewInstruction(Op.OpExecutionMode);
 
             executionModeInstruction.AddOperand(function);
             executionModeInstruction.AddOperand(mode);
@@ -194,25 +211,24 @@ namespace Spv.Generator
                          constant.Opcode == Op.OpConstantNull ||
                          constant.Opcode == Op.OpConstantComposite);
 
-            foreach (Instruction global in _globals)
-            {
-                if (global.Opcode == constant.Opcode && global.EqualsContent(constant) && global.EqualsResultType(constant))
-                {
-                    // update the duplicate instance to use the good id so it ends up being encoded right.
-                    constant.SetId(global.Id);
+            var key = new ConstantKey(constant);
 
-                    return;
-                }
+            if (_constants.TryGetValue(key, out Instruction global))
+            {
+                // update the duplicate instance to use the good id so it ends up being encoded right.
+                constant.SetId(global.Id);
+
+                return;
             }
 
             constant.SetId(GetNewId());
 
-            _globals.Add(constant);
+            _constants.Add(key, constant);
         }
 
         public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
             
             result.AddOperand(set);
             result.AddOperand(instruction);
@@ -231,7 +247,7 @@ namespace Spv.Generator
         // TODO: Found a way to make the auto generate one used.
         public Instruction OpenClPrintf(Instruction resultType, Instruction format, params Instruction[] additionalarguments)
         {
-            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
             
             result.AddOperand(AddExtInstImport("OpenCL.std"));
             result.AddOperand((LiteralInteger)184);
@@ -244,9 +260,12 @@ namespace Spv.Generator
 
         public byte[] Generate()
         {
-            using (MemoryStream stream = new MemoryStream())
+            // Estimate the size needed for the generated code, to avoid expanding the MemoryStream.
+            int sizeEstimate = 1024 + _functionsDefinitions.Count * 32;
+
+            using (MemoryStream stream = new MemoryStream(sizeEstimate))
             {
-                BinaryWriter writer = new BinaryWriter(stream);
+                BinaryWriter writer = new BinaryWriter(stream, System.Text.Encoding.ASCII);
 
                 // Header
                 writer.Write(MagicNumber);
@@ -258,81 +277,87 @@ namespace Spv.Generator
                 // 1.
                 foreach (Capability capability in _capabilities)
                 {
-                    Instruction capabilityInstruction = new Instruction(Op.OpCapability);
+                    Instruction capabilityInstruction = NewInstruction(Op.OpCapability);
 
                     capabilityInstruction.AddOperand(capability);
-                    capabilityInstruction.Write(stream);
+                    capabilityInstruction.Write(writer);
                 }
 
                 // 2.
                 foreach (string extension in _extensions)
                 {
-                    Instruction extensionInstruction = new Instruction(Op.OpExtension);
+                    Instruction extensionInstruction = NewInstruction(Op.OpExtension);
 
                     extensionInstruction.AddOperand(extension);
-                    extensionInstruction.Write(stream);
+                    extensionInstruction.Write(writer);
                 }
 
                 // 3.
-                foreach (Instruction extInstImport in _extInstImports)
+                foreach (Instruction extInstImport in _extInstImports.Values)
                 {
-                    extInstImport.Write(stream);
+                    extInstImport.Write(writer);
                 }
 
                 // 4.
-                Instruction memoryModelInstruction = new Instruction(Op.OpMemoryModel);
+                Instruction memoryModelInstruction = NewInstruction(Op.OpMemoryModel);
                 memoryModelInstruction.AddOperand(_addressingModel);
                 memoryModelInstruction.AddOperand(_memoryModel);
-                memoryModelInstruction.Write(stream);
+                memoryModelInstruction.Write(writer);
 
                 // 5.
                 foreach (Instruction entrypoint in _entrypoints)
                 {
-                    entrypoint.Write(stream);
+                    entrypoint.Write(writer);
                 }
 
                 // 6.
                 foreach (Instruction executionMode in _executionModes)
                 {
-                    executionMode.Write(stream);
+                    executionMode.Write(writer);
                 }
 
                 // 7.
                 // TODO: order debug information correclty.
                 foreach (Instruction debug in _debug)
                 {
-                    debug.Write(stream);
+                    debug.Write(writer);
                 }
 
                 // 8.
                 foreach (Instruction annotation in _annotations)
                 {
-                    annotation.Write(stream);
+                    annotation.Write(writer);
                 }
 
                 // Ensure that everything is in the right order in the declarations section
                 List<Instruction> declarations = new List<Instruction>();
-                declarations.AddRange(_typeDeclarations);
+                declarations.AddRange(_typeDeclarations.Values);
                 declarations.AddRange(_globals);
+                declarations.AddRange(_constants.Values);
                 declarations.Sort((Instruction x, Instruction y) => x.Id.CompareTo(y.Id));
 
                 // 9.
                 foreach (Instruction declaration in declarations)
                 {
-                    declaration.Write(stream);
+                    declaration.Write(writer);
                 }
 
                 // 10.
                 foreach (Instruction functionDeclaration in _functionsDeclarations)
                 {
-                    functionDeclaration.Write(stream);
+                    functionDeclaration.Write(writer);
                 }
 
                 // 11.
                 foreach (Instruction functionDefinition in _functionsDefinitions)
                 {
-                    functionDefinition.Write(stream);
+                    functionDefinition.Write(writer);
                 }
+
+                _instPool.Clear();
+                _integerPool.Clear();
+
+                LiteralInteger.UnregisterPool();
 
                 return stream.ToArray();
             }

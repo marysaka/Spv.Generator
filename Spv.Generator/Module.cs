@@ -110,7 +110,8 @@ namespace Spv.Generator
 
         private void AddTypeDeclaration(Instruction instruction, bool forceIdAllocation)
         {
-            var key = new TypeDeclarationKey(instruction);
+            // TODO : change the type declaration hashing
+            var key = new TypeDeclarationKey(instruction, forceIdAllocation);
 
             if (!forceIdAllocation)
             {

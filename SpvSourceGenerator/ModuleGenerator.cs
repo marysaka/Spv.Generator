@@ -74,12 +74,12 @@ public class ModuleGenerator : ISourceGenerator
         .AppendLineWithIndent("}");
         context.AddSource("Module.Generated.cs", generated.ToString());
 
-        #if DEBUG
-        if (!Debugger.IsAttached)
-        {
-            Debugger.Launch();
-        }
-        #endif
+        // #if DEBUG
+        // if (!Debugger.IsAttached)
+        // {
+        //     Debugger.Launch();
+        // }
+        // #endif
         var glslExt = new CodeBuilder()
         .AppendLine("using static Spv.Specification;")
         .AppendLine("namespace Spv.Generator")

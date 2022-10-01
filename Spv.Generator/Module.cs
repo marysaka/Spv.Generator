@@ -7,14 +7,14 @@ namespace Spv.Generator
 {
     public partial class Module
     {
-        // TODO: register to SPIR-V registry
+        // TODO: Register on SPIR-V registry.
         private const int GeneratorId = 0;
 
         private readonly uint _version;
 
         private uint _bound;
 
-        // Follow spec order here why keeping it as dumb as possible.
+        // Follow spec order here while keeping it as simple as possible.
         private List<Capability> _capabilities;
         private List<string> _extensions;
         private Dictionary<DeterministicStringKey, Instruction> _extInstImports;
@@ -94,7 +94,7 @@ namespace Spv.Generator
 
             if (_extInstImports.TryGetValue(key, out Instruction extInstImport))
             {
-                // update the duplicate instance to use the good id so it ends up being encoded right.
+                // Update the duplicate instance to use the good id so it ends up being encoded correctly.
                 return extInstImport;
             }
 
@@ -110,14 +110,13 @@ namespace Spv.Generator
 
         private void AddTypeDeclaration(Instruction instruction, bool forceIdAllocation)
         {
-            // TODO : change the type declaration hashing
-            var key = new TypeDeclarationKey(instruction, forceIdAllocation);
+            var key = new TypeDeclarationKey(instruction);
 
             if (!forceIdAllocation)
             {
                 if (_typeDeclarations.TryGetValue(key, out Instruction typeDeclaration))
                 {
-                    // update the duplicate instance to use the good id so it ends up being encoded right.
+                    // Update the duplicate instance to use the good id so it ends up being encoded correctly.
 
                     instruction.SetId(typeDeclaration.Id);
 
@@ -182,10 +181,9 @@ namespace Spv.Generator
             AddToFunctionDefinitions(label);
         }
 
-
         public void AddLocalVariable(Instruction variable)
         {
-            // TODO: ensure it has the local modifier
+            // TODO: Ensure it has the local modifier.
             Debug.Assert(variable.Opcode == Op.OpVariable);
 
             variable.SetId(GetNewId());
@@ -195,8 +193,8 @@ namespace Spv.Generator
 
         public void AddGlobalVariable(Instruction variable)
         {
-            // TODO: ensure it has the global modifier
-            // TODO: all constants opcodes (OpSpecXXX and the rest of the OpConstantXXX)
+            // TODO: Ensure it has the global modifier.
+            // TODO: All constants opcodes (OpSpecXXX and the rest of the OpConstantXXX).
             Debug.Assert(variable.Opcode == Op.OpVariable);
 
             variable.SetId(GetNewId());
@@ -216,7 +214,7 @@ namespace Spv.Generator
 
             if (_constants.TryGetValue(key, out Instruction global))
             {
-                // update the duplicate instance to use the good id so it ends up being encoded right.
+                // Update the duplicate instance to use the good id so it ends up being encoded correctly.
                 constant.SetId(global.Id);
 
                 return;
@@ -230,12 +228,12 @@ namespace Spv.Generator
         public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params Operand[] parameters)
         {
             Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
-            
+
             result.AddOperand(set);
             result.AddOperand(instruction);
             result.AddOperand(parameters);
             AddToFunctionDefinitions(result);
-            
+
             return result;
         }
 
@@ -245,17 +243,17 @@ namespace Spv.Generator
             _memoryModel = memoryModel;
         }
 
-        // TODO: Found a way to make the auto generate one used.
+        // TODO: Find a way to make the auto generate one used.
         public Instruction OpenClPrintf(Instruction resultType, Instruction format, params Instruction[] additionalarguments)
         {
             Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
-            
+
             result.AddOperand(AddExtInstImport("OpenCL.std"));
             result.AddOperand((LiteralInteger)184);
             result.AddOperand(format);
             result.AddOperand(additionalarguments);
             AddToFunctionDefinitions(result);
-            
+
             return result;
         }
 
@@ -318,7 +316,7 @@ namespace Spv.Generator
                 }
 
                 // 7.
-                // TODO: order debug information correclty.
+                // TODO: Order debug information correctly.
                 foreach (Instruction debug in _debug)
                 {
                     debug.Write(writer);
@@ -330,7 +328,7 @@ namespace Spv.Generator
                     annotation.Write(writer);
                 }
 
-                // Ensure that everything is in the right order in the declarations section
+                // Ensure that everything is in the right order in the declarations section.
                 List<Instruction> declarations = new List<Instruction>();
                 declarations.AddRange(_typeDeclarations.Values);
                 declarations.AddRange(_globals);

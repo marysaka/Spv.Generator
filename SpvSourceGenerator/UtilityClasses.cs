@@ -290,23 +290,23 @@ public class MethodInfo
             {
                 var argument = mi.Arguments[mi.ResultTypeIndex];
                 if(mi.CL== "Constant-Creation" && mi.Name.StartsWith("Constant"))
-                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name}, Instruction.InvalidId, {argument.Name});");
+                    code.AppendLineWithIndent($"Instruction result = NewInstruction(Op.{mi.Name}, Instruction.InvalidId, {argument.Name});");
                 else
-                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name}, GetNewId(), {argument.Name});");
+                    code.AppendLineWithIndent($"Instruction result = NewInstruction(Op.{mi.Name}, GetNewId(), {argument.Name});");
             }
             else
             {
                 if(mi.CL == "Type-Declaration" || mi.Name == "Label")
-                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name});");
+                    code.AppendLineWithIndent($"Instruction result = NewInstruction(Op.{mi.Name});");
                 else
-                    code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name}, GetNewId());");
+                    code.AppendLineWithIndent($"Instruction result = NewInstruction(Op.{mi.Name}, GetNewId());");
             }
         }
         else
         {
             if(mi.ResultTypeIndex != -1)
                 throw new NotImplementedException();
-            code.AppendLineWithIndent($"Instruction result = new Instruction(Op.{mi.Name});");
+            code.AppendLineWithIndent($"Instruction result = NewInstruction(Op.{mi.Name});");
         }
         if(mi.ExtinstInfo is null)
         {

@@ -9,6 +9,31 @@ using System.Text.Json;
 [Generator]
 public class ModuleGenerator : ISourceGenerator
 {
+    static readonly List<string> classes = new(){
+            "Miscellaneous",
+            "Debug",
+            "Annotation",
+            "Type-Declaration",
+            "Constant-Creation",
+            "Memory",
+            "Function",
+            "Image",
+            "Conversion",
+            "Composite",
+            "Arithmetic",
+            "Bit",
+            "Relational_and_Logical",
+            "Derivative",
+            "Control-Flow",
+            "Atomic",
+            "Primitive",
+            "Barrier",
+            "Group",
+            "Device-Side_Enqueue",
+            "Pipe",
+            "Non-Uniform",
+            "Reserved",
+        };
     public string pathJson = @"..\SPIRV-Headers\include\spirv\unified1\spirv.core.grammar.json";
     public void Execute(GeneratorExecutionContext context)
     {
@@ -42,31 +67,7 @@ public class ModuleGenerator : ISourceGenerator
         var glslExtInfo = JsonDocument.Parse("{ \"name\": \"GLSL.std.450\", \"function_prefix\": \"Glsl\"}");
         var oclExtInfo = JsonDocument.Parse("{ \"name\": \"OpenCL.std\", \"function_prefix\": \"OpenCl\"}");
 
-        List<string> classes = new(){
-            "Miscellaneous",
-            "Debug",
-            "Annotation",
-            "Type-Declaration",
-            "Constant-Creation",
-            "Memory",
-            "Function",
-            "Image",
-            "Conversion",
-            "Composite",
-            "Arithmetic",
-            "Bit",
-            "Relational_and_Logical",
-            "Derivative",
-            "Control-Flow",
-            "Atomic",
-            "Primitive",
-            "Barrier",
-            "Group",
-            "Device-Side_Enqueue",
-            "Pipe",
-            "Non-Uniform",
-            "Reserved",
-        };
+        
         classes.ForEach(x =>MethodInfo.GenerateMethodsByClass(generated, spirvCore,x));
         generated
         .AppendLineWithIndent("}")

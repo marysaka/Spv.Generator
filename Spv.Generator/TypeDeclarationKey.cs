@@ -6,10 +6,12 @@ namespace Spv.Generator
     internal struct TypeDeclarationKey : IEquatable<TypeDeclarationKey>
     {
         private Instruction _typeDeclaration;
+        private bool forceIdAlloc = false;
 
-        public TypeDeclarationKey(Instruction typeDeclaration)
+        public TypeDeclarationKey(Instruction typeDeclaration, bool forceId = false)
         {
             _typeDeclaration = typeDeclaration;
+            forceIdAlloc = forceId;
         }
 
         public override int GetHashCode()
@@ -19,7 +21,7 @@ namespace Spv.Generator
 
         public bool Equals(TypeDeclarationKey other)
         {
-            return _typeDeclaration.Opcode == other._typeDeclaration.Opcode && _typeDeclaration.EqualsContent(other._typeDeclaration);
+            return !forceIdAlloc && _typeDeclaration.Opcode == other._typeDeclaration.Opcode && _typeDeclaration.EqualsContent(other._typeDeclaration);
         }
 
         public override bool Equals([NotNullWhen(true)] object obj)

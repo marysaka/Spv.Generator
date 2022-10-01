@@ -25,9 +25,23 @@ namespace Spv.Generator.Testing
                 Instruction outputTest = Variable(floatOutputType, StorageClass.Output);
                 Instruction outputColor = Variable(vec4OutputPtrType, StorageClass.Output);
 
+                var position = TypeStruct(true,floatType,floatType,floatType);
+                Name(position, "Position");
+                MemberName(position,0,"x");
+                MemberName(position,1,"y");
+                MemberName(position,2,"z");
+                var scale = TypeStruct(true, floatType,floatType,floatType);
+                Name(scale, "Scale");
+                MemberName(scale,0,"x");
+                MemberName(scale,1,"y");
+                MemberName(scale,2,"z");
+                Instruction input2Test = Variable(position, StorageClass.Input);
+
+
                 Name(inputTest, "inputTest");
                 Name(outputColor, "outputColor");
                 AddGlobalVariable(inputTest);
+                AddGlobalVariable(input2Test);
                 AddGlobalVariable(outputTest);
                 AddGlobalVariable(outputColor);
 
@@ -43,6 +57,9 @@ namespace Spv.Generator.Testing
                 Instruction mainFunctionType = TypeFunction(voidType, true);
                 Instruction mainFunction = Function(voidType, FunctionControlMask.MaskNone, mainFunctionType);
                 AddLabel(Label());
+                // AddLabel(Label());
+                // Branch(Label());
+
 
                 Instruction tempInput = Load(floatType, inputTest);
 

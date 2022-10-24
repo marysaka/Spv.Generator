@@ -35,13 +35,17 @@ namespace Spv.Generator.Testing
                 MemberName(scale,0,"x");
                 MemberName(scale,1,"y");
                 MemberName(scale,2,"z");
-                Instruction input2Test = Variable(position, StorageClass.Input);
+
+                var transform = TypeStruct(true, position,scale);
+                Name(transform, "Transform");
+                MemberName(transform,0,"position");
+                MemberName(transform,1,"scale");
+                
 
 
                 Name(inputTest, "inputTest");
                 Name(outputColor, "outputColor");
                 AddGlobalVariable(inputTest);
-                AddGlobalVariable(input2Test);
                 AddGlobalVariable(outputTest);
                 AddGlobalVariable(outputColor);
 
@@ -57,8 +61,17 @@ namespace Spv.Generator.Testing
                 Instruction mainFunctionType = TypeFunction(voidType, true);
                 Instruction mainFunction = Function(voidType, FunctionControlMask.MaskNone, mainFunctionType);
                 AddLabel(Label());
-                // AddLabel(Label());
-                // Branch(Label());
+                Instruction myVar = Variable(transform, StorageClass.Function);
+                AddLocalVariable(myVar);
+                var pfloat = TypePointer(StorageClass.Function, floatType); 
+                var access = AccessChain(pfloat, myVar, Constant(TypeInt(32,0),0),Constant(TypeInt(32,0),0));
+                Store(access, Constant(TypeFloat(32),12f));
+                // for (int i = 0; i < 2; i++)
+                // {
+                //     var pfloat = TypePointer(StorageClass.Function, floatType); 
+                //     var access = AccessChain(pfloat, myVar, Constant(TypeInt(32,0),i));
+                //     Store(access, Constant(TypeInt(32,0),i));
+                // }
 
 
                 Instruction tempInput = Load(floatType, inputTest);

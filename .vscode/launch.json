@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Spv.Generator.Testing/bin/Debug/net6.0/Spv.Generator.Testing.dll",
+            "program": "${workspaceFolder}/Spv.Generator.Testing/bin/Debug/net7.0/Spv.Generator.Testing.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Spv.Generator.Testing",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

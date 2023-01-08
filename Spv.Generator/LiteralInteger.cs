@@ -1,12 +1,23 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace Spv.Generator
 {
     public class LiteralInteger : Operand, IEquatable<LiteralInteger>
     {
+        [ThreadStatic]
+        private static GeneratorPool<LiteralInteger> _pool;
+
+        internal static void RegisterPool(GeneratorPool<LiteralInteger> pool)
+        {
+            _pool = pool;
+        }
+
+        internal static void UnregisterPool()
+        {
+            _pool = null;
+        }
+
         public OperandType Type => OperandType.Number;
 
         private enum IntegerType
@@ -20,42 +31,53 @@ namespace Spv.Generator
         }
 
         private IntegerType _integerType;
+        private ulong _data;
 
-        private byte[] _data;
+        public ushort WordCount { get; private set; }
 
-        private LiteralInteger(byte[] data, IntegerType integerType)
+        public LiteralInteger() { }
+
+        private static LiteralInteger New()
+        {
+            return _pool.Allocate();
+        }
+
+        private LiteralInteger Set(ulong data, IntegerType integerType, ushort wordCount)
         {
             _data = data;
             _integerType = integerType;
+
+            WordCount = wordCount;
+
+            return this;
         }
 
-        public static implicit operator LiteralInteger(int value) => Create(value, IntegerType.Int32);
-        public static implicit operator LiteralInteger(uint value) => Create(value, IntegerType.UInt32);
-        public static implicit operator LiteralInteger(long value) => Create(value, IntegerType.Int64);
-        public static implicit operator LiteralInteger(ulong value) => Create(value, IntegerType.UInt64);
-        public static implicit operator LiteralInteger(float value) => Create(value, IntegerType.Float32);
-        public static implicit operator LiteralInteger(double value) => Create(value, IntegerType.Float64);
-        public static implicit operator LiteralInteger(Enum value) => Create((int)Convert.ChangeType(value, typeof(int)), IntegerType.Int32);
+        public static implicit operator LiteralInteger(int value) => New().Set((ulong)value, IntegerType.Int32, 1);
+        public static implicit operator LiteralInteger(uint value) => New().Set(value, IntegerType.UInt32, 1);
+        public static implicit operator LiteralInteger(long value) => New().Set((ulong)value, IntegerType.Int64, 2);
+        public static implicit operator LiteralInteger(ulong value) => New().Set(value, IntegerType.UInt64, 2);
+        public static implicit operator LiteralInteger(float value) => New().Set(BitConverter.SingleToUInt32Bits(value), IntegerType.Float32, 1);
+        public static implicit operator LiteralInteger(double value) => New().Set(BitConverter.DoubleToUInt64Bits(value), IntegerType.Float64, 2);
+        public static implicit operator LiteralInteger(Enum value) => New().Set((ulong)(int)(object)value, IntegerType.Int32, 1);
 
         // NOTE: this is not in the standard, but this is some syntax sugar useful in some instructions (TypeInt ect)
-        public static implicit operator LiteralInteger(bool value) => Create(Convert.ToInt32(value), IntegerType.Int32);
+        public static implicit operator LiteralInteger(bool value) => New().Set(Convert.ToUInt64(value), IntegerType.Int32, 1);
 
-
-        public static LiteralInteger CreateForEnum<T>(T value) where T : struct
+        public static LiteralInteger CreateForEnum<T>(T value) where T : Enum
         {
-            return Create(value, IntegerType.Int32);
+            return value;
         }
 
-        private static LiteralInteger Create<T>(T value, IntegerType integerType) where T: struct
+        public void WriteOperand(BinaryWriter writer)
         {
-            return new LiteralInteger(MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)).ToArray(), integerType);
-        }
-
-        public ushort WordCount => (ushort)(_data.Length / 4);
-
-        public void WriteOperand(Stream stream)
-        {
-            stream.Write(_data);
+            if (WordCount == 1)
+            {
+                writer.Write((uint)_data);
+            }
+            else
+            {
+                writer.Write(_data);
+            }
         }
 
         public override bool Equals(object obj)
@@ -65,17 +87,19 @@ namespace Spv.Generator
 
         public bool Equals(LiteralInteger cmpObj)
         {
-            return Type == cmpObj.Type && _integerType == cmpObj._integerType && _data.SequenceEqual(cmpObj._data);
+            return Type == cmpObj.Type && _integerType == cmpObj._integerType && _data == cmpObj._data;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Type, _data);
+            return DeterministicHashCode.Combine(Type, _data);
         }
 
         public bool Equals(Operand obj)
         {
             return obj is LiteralInteger literalInteger && Equals(literalInteger);
         }
+
+        public override string ToString() => $"{_integerType} {_data}";
     }
 }

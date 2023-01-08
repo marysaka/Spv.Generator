@@ -17,15 +17,16 @@ namespace Spv.Generator
 
         public ushort WordCount => (ushort)(_value.Length / 4 + 1);
 
-        public void WriteOperand(Stream stream)
+        public void WriteOperand(BinaryWriter writer)
         {
-            byte[] rawValue = Encoding.ASCII.GetBytes(_value);
+            writer.Write(_value.AsSpan());
 
-            stream.Write(rawValue);
+            // String must be padded to the word size (which is 4 bytes).
+            int paddingSize = 4 - (Encoding.ASCII.GetByteCount(_value) % 4);
 
-            int paddingSize = 4 - (rawValue.Length % 4);
+            Span<byte> padding = stackalloc byte[paddingSize];
 
-            stream.Write(new byte[paddingSize]);
+            writer.Write(padding);
         }
 
         public override bool Equals(object obj)
@@ -40,12 +41,14 @@ namespace Spv.Generator
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Type, _value);
+            return DeterministicHashCode.Combine(Type, DeterministicHashCode.GetHashCode(_value));
         }
 
         public bool Equals(Operand obj)
         {
             return obj is LiteralString literalString && Equals(literalString);
         }
+
+        public override string ToString() => _value;
     }
 }

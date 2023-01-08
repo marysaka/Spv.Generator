@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace Spv.Generator
 {
@@ -12,17 +11,19 @@ namespace Spv.Generator
 
         public Specification.Op Opcode { get; private set; }
         private Instruction _resultType;
-        public List<Operand> _operands;
+        private InstructionOperands _operands;
 
         public uint Id { get; set; }
 
-        public Instruction(Specification.Op opcode, uint id = InvalidId, Instruction resultType = null)
+        public Instruction() { }
+
+        public void Set(Specification.Op opcode, uint id = InvalidId, Instruction resultType = null)
         {
             Opcode = opcode;
             Id = id;
             _resultType = resultType;
 
-            _operands = new List<Operand>();
+            _operands = new InstructionOperands();
         }
 
         public void SetId(uint id)
@@ -46,9 +47,10 @@ namespace Spv.Generator
                 result += _resultType.WordCount;
             }
 
-            foreach (Operand operand in _operands)
+            Span<Operand> operands = _operands.AsSpan();
+            for (int i = 0; i < operands.Length; i++)
             {
-                result += operand.WordCount;
+                result += operands[i].WordCount;
             }
 
             return result;
@@ -56,7 +58,7 @@ namespace Spv.Generator
 
         public ushort WordCount => 1;
 
-        private void AddOperand(Operand value)
+        public void AddOperand(Operand value)
         {
             Debug.Assert(value != null);
             _operands.Add(value);
@@ -101,38 +103,32 @@ namespace Spv.Generator
             AddOperand(new LiteralString(value));
         }
 
-        public void AddOperand<T>(T value) where T: struct
+        public void AddOperand<T>(T value) where T: Enum
         {
-            if (!typeof(T).IsPrimitive && !typeof(T).IsEnum)
-            {
-                throw new InvalidOperationException();
-            }
-
             AddOperand(LiteralInteger.CreateForEnum(value));
         }
 
-        public void Write(Stream stream)
+        public void Write(BinaryWriter writer)
         {
-            BinaryWriter writer = new BinaryWriter(stream);
-
             // Word 0
             writer.Write((ushort)Opcode);
             writer.Write(GetTotalWordCount());
 
-            _resultType?.WriteOperand(stream);
+            _resultType?.WriteOperand(writer);
 
             if (Id != InvalidId)
             {
                 writer.Write(Id);
             }
 
-            foreach (Operand operand in _operands)
+            Span<Operand> operands = _operands.AsSpan();
+            for (int i = 0; i < operands.Length; i++)
             {
-                operand.WriteOperand(stream);
+                operands[i].WriteOperand(writer);
             }
         }
 
-        public void WriteOperand(Stream stream)
+        public void WriteOperand(BinaryWriter writer)
         {
             Debug.Assert(Id != InvalidId);
 
@@ -156,7 +152,7 @@ namespace Spv.Generator
                 throw new InvalidOperationException($"Id wasn't bound to the module, please make sure to call {methodToCall}");
             }
 
-            stream.Write(BitConverter.GetBytes(Id));
+            writer.Write(Id);
         }
 
         public override bool Equals(object obj)
@@ -190,7 +186,23 @@ namespace Spv.Generator
 
         public bool EqualsContent(Instruction cmpObj)
         {
-            return _operands.SequenceEqual(cmpObj._operands);
+            Span<Operand> thisOperands = _operands.AsSpan();
+            Span<Operand> cmpOperands = cmpObj._operands.AsSpan();
+
+            if (thisOperands.Length != cmpOperands.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < thisOperands.Length; i++)
+            {
+                if (!thisOperands[i].Equals(cmpOperands[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public bool EqualsResultType(Instruction cmpObj)
@@ -198,14 +210,38 @@ namespace Spv.Generator
             return _resultType.Opcode == cmpObj._resultType.Opcode && _resultType.EqualsContent(cmpObj._resultType);
         }
 
+        public int GetHashCodeContent()
+        {
+            return DeterministicHashCode.Combine<Operand>(_operands.AsSpan());
+        }
+
+        public int GetHashCodeResultType()
+        {
+            return DeterministicHashCode.Combine(_resultType.Opcode, _resultType.GetHashCodeContent());
+        }
+
         public override int GetHashCode()
         {
-            return HashCode.Combine(Opcode, Id, _resultType, _operands);
+            return DeterministicHashCode.Combine(Opcode, Id, _resultType, DeterministicHashCode.Combine<Operand>(_operands.AsSpan()));
         }
 
         public bool Equals(Operand obj)
         {
             return obj is Instruction instruction && Equals(instruction);
+        }
+        
+        private static readonly Dictionary<Specification.Op, string[]> _operandLabels = new()
+        {
+            { Specification.Op.OpConstant, new [] { "Value" } },
+            { Specification.Op.OpTypeInt, new [] { "Width", "Signed" } },
+            { Specification.Op.OpTypeFloat, new [] { "Width" } }
+        };
+
+        public override string ToString()
+        {
+            var labels = _operandLabels.TryGetValue(Opcode, out var opLabels) ? opLabels : Array.Empty<string>();
+            var result = _resultType == null ? string.Empty : $"{_resultType} ";
+            return $"{result}{Opcode}{_operands.ToString(labels)}";
         }
     }
 }

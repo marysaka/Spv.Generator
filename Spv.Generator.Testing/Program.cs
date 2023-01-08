@@ -16,14 +16,32 @@ namespace Spv.Generator.Testing
                 SetMemoryModel(AddressingModel.Logical, MemoryModel.Simple);
 
                 Instruction floatType = TypeFloat(32);
-                Instruction floatInputType = TypePointer(StorageClass.Input, floatType);
-                Instruction floatOutputType = TypePointer(StorageClass.Output, floatType);
+                Instruction floatInputType = TypePointer(StorageClass.Input, floatType, true);
+                Instruction floatOutputType = TypePointer(StorageClass.Output, floatType, true);
                 Instruction vec4Type = TypeVector(floatType, 4);
                 Instruction vec4OutputPtrType = TypePointer(StorageClass.Output, vec4Type);
 
                 Instruction inputTest = Variable(floatInputType, StorageClass.Input);
                 Instruction outputTest = Variable(floatOutputType, StorageClass.Output);
                 Instruction outputColor = Variable(vec4OutputPtrType, StorageClass.Output);
+
+                var position = TypeStruct(true,floatType,floatType,floatType);
+                Name(position, "Position");
+                MemberName(position,0,"x");
+                MemberName(position,1,"y");
+                MemberName(position,2,"z");
+                var scale = TypeStruct(true, floatType,floatType,floatType);
+                Name(scale, "Scale");
+                MemberName(scale,0,"x");
+                MemberName(scale,1,"y");
+                MemberName(scale,2,"z");
+
+                var transform = TypeStruct(true, position,scale);
+                Name(transform, "Transform");
+                MemberName(transform,0,"position");
+                MemberName(transform,1,"scale");
+                
+
 
                 Name(inputTest, "inputTest");
                 Name(outputColor, "outputColor");
@@ -43,6 +61,18 @@ namespace Spv.Generator.Testing
                 Instruction mainFunctionType = TypeFunction(voidType, true);
                 Instruction mainFunction = Function(voidType, FunctionControlMask.MaskNone, mainFunctionType);
                 AddLabel(Label());
+                Instruction myVar = Variable(transform, StorageClass.Function);
+                AddLocalVariable(myVar);
+                var pfloat = TypePointer(StorageClass.Function, floatType); 
+                var access = AccessChain(pfloat, myVar, Constant(TypeInt(32,0),0),Constant(TypeInt(32,0),0));
+                Store(access, Constant(TypeFloat(32),12f));
+                // for (int i = 0; i < 2; i++)
+                // {
+                //     var pfloat = TypePointer(StorageClass.Function, floatType); 
+                //     var access = AccessChain(pfloat, myVar, Constant(TypeInt(32,0),i));
+                //     Store(access, Constant(TypeInt(32,0),i));
+                // }
+
 
                 Instruction tempInput = Load(floatType, inputTest);
 
@@ -66,9 +96,7 @@ namespace Spv.Generator.Testing
 
             byte[] ModuleData = module.Generate();
 
-            File.WriteAllBytes(Args[0], ModuleData);
-
-            Console.WriteLine(Args[0]);
+            File.WriteAllBytes("./shader.spv", ModuleData);
         }
     }
 }

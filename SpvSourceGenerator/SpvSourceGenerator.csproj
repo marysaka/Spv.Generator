@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\spirv.core.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.glsl.std.450.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.opencl.std.100.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-gcn-shader.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-shader-ballot.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json" />
+    <EmbeddedResource Include="..\SPIRV-Headers\include\spirv\unified1\extinst.spv-amd-shader-trinary-minmax.grammar.json" />
+
+
+  </ItemGroup>
+
+</Project>
